@@ -12,6 +12,36 @@ export interface FoodEntry {
   analysisResult: string | null
 }
 
+export interface FoodIdentificationResult {
+  foodName: string
+  estimatedCalories: number
+  confidenceLevel: number
+}
+
+export async function identifyFood(
+  image: File,
+  userId: number,
+  signal?: AbortSignal
+): Promise<FoodIdentificationResult | null> {
+  const formData = new FormData()
+  formData.append('image', image)
+  formData.append('userId', String(userId))
+
+  try {
+    const res = await fetch('/api/food-entries/identify', {
+      method: 'POST',
+      body: formData,
+      signal,
+    })
+    if (!res.ok) return null
+    const json: ApiResponse<FoodIdentificationResult> = await res.json()
+    if (!json.success || !json.data) return null
+    return json.data
+  } catch {
+    return null
+  }
+}
+
 export async function createFoodEntry(
   userId: number,
   foodName: string,
