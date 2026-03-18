@@ -6,6 +6,15 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
+  <PropertyGroup>
+    <SpaRoot>../../../misteryapp.web.client/</SpaRoot>
+  </PropertyGroup>
+
+  <Target Name="PublishRunWebpack" AfterTargets="ComputeFilesToPublish">
+    <Exec WorkingDirectory="$(SpaRoot)" Command="npm install" />
+    <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build" />
+  </Target>
+
   <ItemGroup>
     <ProjectReference Include="..\MisteryApp.Web.Core\MisteryApp.Web.Core.csproj" />
     <ProjectReference Include="..\MisteryApp.Implementation\MisteryApp.Implementation.csproj" />

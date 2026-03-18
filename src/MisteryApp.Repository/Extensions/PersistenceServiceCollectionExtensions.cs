@@ -11,13 +11,7 @@ public static class PersistenceServiceCollectionExtensions
         IConfiguration configuration)
     {
         services.AddDbContextFactory<ApplicationDbContext>(options =>
-            options.UseSqlServer(
-                configuration.GetConnectionString("DefaultConnection"),
-                sqlOptions =>
-                {
-                    sqlOptions.EnableRetryOnFailure(maxRetryCount: 3, maxRetryDelay: TimeSpan.FromSeconds(5), errorNumbersToAdd: null);
-                    sqlOptions.CommandTimeout(30);
-                }));
+            options.UseSqlite(configuration.GetConnectionString("DefaultConnection")));
 
         return services;
     }
