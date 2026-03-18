@@ -10,6 +10,7 @@ import {
   type FoodAnalysisResult,
   type AlternativeImageResult,
 } from '../api/foodLogApi'
+import { createBookmark } from '../api/bookmarksApi'
 
 export default function FoodLoggingPage() {
   const { userId } = useIdentity()
@@ -38,6 +39,8 @@ export default function FoodLoggingPage() {
   const [savedEntryId, setSavedEntryId] = useState<number | null>(null)
   const [alternativeImage, setAlternativeImage] = useState<AlternativeImageResult | null>(null)
   const [loadingImage, setLoadingImage] = useState(false)
+  const [bookmarkSaved, setBookmarkSaved] = useState(false)
+  const [bookmarkSaving, setBookmarkSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -184,10 +187,38 @@ export default function FoodLoggingPage() {
                 )}
 
                 {analysisResult.alternativeFoodName && (
-                  <p className="text-sm text-glass-text">
-                    <span className="text-glass-muted">Try instead: </span>
-                    <span className="font-medium">{analysisResult.alternativeFoodName}</span>
-                  </p>
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <p className="text-sm text-glass-text">
+                      <span className="text-glass-muted">Try instead: </span>
+                      <span className="font-medium">{analysisResult.alternativeFoodName}</span>
+                    </p>
+                    {!bookmarkSaved && (
+                      <button
+                        onClick={async () => {
+                          if (!userId) return
+                          setBookmarkSaving(true)
+                          try {
+                            await createBookmark(
+                              parseInt(userId, 10),
+                              analysisResult.alternativeFoodName!,
+                              alternativeImage?.imageBase64 ?? null,
+                              alternativeImage?.mimeType ?? null
+                            )
+                            setBookmarkSaved(true)
+                          } finally {
+                            setBookmarkSaving(false)
+                          }
+                        }}
+                        disabled={bookmarkSaving || loadingImage}
+                        className="text-xs text-brand-400 hover:underline disabled:opacity-50"
+                      >
+                        {bookmarkSaving ? 'Saving…' : 'Save for later'}
+                      </button>
+                    )}
+                    {bookmarkSaved && (
+                      <span className="text-xs text-emerald-400">Saved</span>
+                    )}
+                  </div>
                 )}
 
                 {/* AI-generated alternative image */}

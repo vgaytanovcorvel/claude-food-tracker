@@ -57,6 +57,18 @@ export default function HomePage() {
             >
               Today's log
             </Link>
+            <Link
+              to="/reports/weekly"
+              className="inline-block text-brand-500 hover:underline text-sm"
+            >
+              Reports
+            </Link>
+            <Link
+              to="/bookmarks"
+              className="inline-block text-brand-500 hover:underline text-sm"
+            >
+              Bookmarks
+            </Link>
           </div>
         )}
       </div>

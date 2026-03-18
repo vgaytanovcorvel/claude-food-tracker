@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using MisteryApp.Repository.Entities;
 
+
 namespace MisteryApp.Repository.Contexts;
 
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
@@ -8,6 +9,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 {
     public DbSet<UserProfileEntity> UserProfiles => Set<UserProfileEntity>();
     public DbSet<FoodLogEntity> FoodLog => Set<FoodLogEntity>();
+    public DbSet<AlternativeBookmarkEntity> AlternativeBookmarks => Set<AlternativeBookmarkEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

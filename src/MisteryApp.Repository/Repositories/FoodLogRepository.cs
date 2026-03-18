@@ -66,6 +66,20 @@ public class FoodLogRepository(IDbContextFactory<ApplicationDbContext> contextFa
         return entities.Select(MapToDomain).ToList();
     }
 
+    public virtual async Task<IReadOnlyList<FoodEntry>> FoodEntryGetByUserAndDateRangeAsync(
+        int userId, DateOnly startDate, DateOnly endDate, CancellationToken cancellationToken)
+    {
+        await using var dbContext = await CreateContextAsync(cancellationToken);
+        var start = startDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+        var end = endDate.ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc);
+        var entities = await dbContext.FoodLog
+            .AsNoTracking()
+            .Where(e => e.UserId == userId && e.LoggedAt >= start && e.LoggedAt <= end)
+            .OrderBy(e => e.LoggedAt)
+            .ToListAsync(cancellationToken);
+        return entities.Select(MapToDomain).ToList();
+    }
+
     private static FoodEntry MapToDomain(FoodLogEntity entity) =>
         new()
         {

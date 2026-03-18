@@ -4,6 +4,7 @@ using MisteryApp.Abstractions.Interfaces;
 using MisteryApp.Repository.Contexts;
 using MisteryApp.Repository.Repositories;
 
+
 namespace Microsoft.Extensions.DependencyInjection;
 
 public static class PersistenceServiceCollectionExtensions
@@ -17,6 +18,7 @@ public static class PersistenceServiceCollectionExtensions
 
         services.AddScoped<IUserProfileRepository, UserProfileRepository>();
         services.AddScoped<IFoodLogRepository, FoodLogRepository>();
+        services.AddScoped<IAlternativeBookmarkRepository, AlternativeBookmarkRepository>();
 
         return services;
     }
