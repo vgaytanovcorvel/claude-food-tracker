@@ -17,6 +17,7 @@ public class FoodLogServiceTests
     private Mock<IFoodLogRepository> foodLogRepositoryMock = new(MockBehavior.Strict);
     private Mock<IUserProfileRepository> userProfileRepositoryMock = new(MockBehavior.Strict);
     private Mock<IFoodAnalysisService> foodAnalysisServiceMock = new(MockBehavior.Strict);
+    private Mock<IAlternativeImageService> alternativeImageServiceMock = new(MockBehavior.Strict);
     private FakeTimeProvider timeProvider = null!;
     private Mock<FoodLogService> foodLogServiceMock = null!;
 
@@ -31,6 +32,7 @@ public class FoodLogServiceTests
                 foodLogRepositoryMock.Object,
                 userProfileRepositoryMock.Object,
                 foodAnalysisServiceMock.Object,
+                alternativeImageServiceMock.Object,
                 timeProvider),
             MockBehavior.Strict);
     }
@@ -94,6 +96,7 @@ public class FoodLogServiceTests
         userProfileRepositoryMock.VerifyAll();
         foodLogRepositoryMock.VerifyAll();
         foodAnalysisServiceMock.VerifyAll();
+        alternativeImageServiceMock.VerifyAll();
     }
 
     [TestMethod]
@@ -123,6 +126,7 @@ public class FoodLogServiceTests
         userProfileRepositoryMock.VerifyAll();
         foodLogRepositoryMock.VerifyAll();
         foodAnalysisServiceMock.VerifyAll();
+        alternativeImageServiceMock.VerifyAll();
     }
 
     [TestMethod]
@@ -156,6 +160,7 @@ public class FoodLogServiceTests
         foodLogRepositoryMock.VerifyAll();
         userProfileRepositoryMock.VerifyAll();
         foodAnalysisServiceMock.VerifyAll();
+        alternativeImageServiceMock.VerifyAll();
     }
 
     [TestMethod]
@@ -185,6 +190,7 @@ public class FoodLogServiceTests
         foodLogRepositoryMock.VerifyAll();
         userProfileRepositoryMock.VerifyAll();
         foodAnalysisServiceMock.VerifyAll();
+        alternativeImageServiceMock.VerifyAll();
     }
 
     [TestMethod]
@@ -234,6 +240,7 @@ public class FoodLogServiceTests
         foodLogRepositoryMock.VerifyAll();
         userProfileRepositoryMock.VerifyAll();
         foodAnalysisServiceMock.VerifyAll();
+        alternativeImageServiceMock.VerifyAll();
     }
 
     [TestMethod]
@@ -262,6 +269,7 @@ public class FoodLogServiceTests
         foodLogRepositoryMock.VerifyAll();
         userProfileRepositoryMock.VerifyAll();
         foodAnalysisServiceMock.VerifyAll();
+        alternativeImageServiceMock.VerifyAll();
     }
 
     [TestMethod]
@@ -297,6 +305,7 @@ public class FoodLogServiceTests
         foodLogRepositoryMock.VerifyAll();
         userProfileRepositoryMock.VerifyAll();
         foodAnalysisServiceMock.VerifyAll();
+        alternativeImageServiceMock.VerifyAll();
     }
 
     [TestMethod]
@@ -337,6 +346,7 @@ public class FoodLogServiceTests
         foodLogRepositoryMock.VerifyAll();
         userProfileRepositoryMock.VerifyAll();
         foodAnalysisServiceMock.VerifyAll();
+        alternativeImageServiceMock.VerifyAll();
     }
 
     [TestMethod]
@@ -373,5 +383,105 @@ public class FoodLogServiceTests
         foodLogRepositoryMock.VerifyAll();
         userProfileRepositoryMock.VerifyAll();
         foodAnalysisServiceMock.VerifyAll();
+        alternativeImageServiceMock.VerifyAll();
+    }
+
+    [TestMethod]
+    public async Task GetAlternativeImageForEntryAsync_ShouldReturnImage_WhenEntryHasAlternativeFood()
+    {
+        // Arrange
+        var entryId = 1;
+        var ct = CancellationToken.None;
+        const string conflictJson = """{"Compatible":false,"Severity":"Medium","EducationText":"High carbs.","AlternativeFoodName":"Zucchini Noodles"}""";
+        var entry = new FoodEntry { Id = entryId, UserId = 1, FoodName = "Rice Noodles", EstimatedCalories = 350, AnalysisResult = conflictJson };
+        var imageResult = new AlternativeImageResult("base64imagedata==", "image/png");
+
+        foodLogServiceMock
+            .Setup(s => s.GetAlternativeImageForEntryAsync(entryId, ct))
+            .CallBase()
+            .Verifiable(Times.Once());
+
+        foodLogRepositoryMock
+            .Setup(r => r.FoodEntrySingleByIdAsync(entryId, ct))
+            .ReturnsAsync(entry)
+            .Verifiable(Times.Once());
+
+        alternativeImageServiceMock
+            .Setup(s => s.GenerateAlternativeImageAsync("Zucchini Noodles", 1, ct))
+            .ReturnsAsync(imageResult)
+            .Verifiable(Times.Once());
+
+        // Act
+        var result = await foodLogServiceMock.Object.GetAlternativeImageForEntryAsync(entryId, ct);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.ImageBase64.Should().Be("base64imagedata==");
+        result.MimeType.Should().Be("image/png");
+        foodLogServiceMock.VerifyAll();
+        foodLogRepositoryMock.VerifyAll();
+        userProfileRepositoryMock.VerifyAll();
+        foodAnalysisServiceMock.VerifyAll();
+        alternativeImageServiceMock.VerifyAll();
+    }
+
+    [TestMethod]
+    public async Task GetAlternativeImageForEntryAsync_ShouldReturnEmpty_WhenEntryHasNoAnalysis()
+    {
+        // Arrange
+        var entryId = 2;
+        var ct = CancellationToken.None;
+        var entry = new FoodEntry { Id = entryId, UserId = 1, FoodName = "Water", EstimatedCalories = 0, AnalysisResult = null };
+
+        foodLogServiceMock
+            .Setup(s => s.GetAlternativeImageForEntryAsync(entryId, ct))
+            .CallBase()
+            .Verifiable(Times.Once());
+
+        foodLogRepositoryMock
+            .Setup(r => r.FoodEntrySingleByIdAsync(entryId, ct))
+            .ReturnsAsync(entry)
+            .Verifiable(Times.Once());
+
+        // Act
+        var result = await foodLogServiceMock.Object.GetAlternativeImageForEntryAsync(entryId, ct);
+
+        // Assert
+        result.ImageBase64.Should().BeNull();
+        result.MimeType.Should().BeNull();
+        foodLogServiceMock.VerifyAll();
+        foodLogRepositoryMock.VerifyAll();
+        userProfileRepositoryMock.VerifyAll();
+        foodAnalysisServiceMock.VerifyAll();
+        alternativeImageServiceMock.VerifyAll();
+    }
+
+    [TestMethod]
+    public async Task GetAlternativeImageForEntryAsync_ShouldThrowNotFoundException_WhenEntryNotFound()
+    {
+        // Arrange
+        var entryId = 999;
+        var ct = CancellationToken.None;
+
+        foodLogServiceMock
+            .Setup(s => s.GetAlternativeImageForEntryAsync(entryId, ct))
+            .CallBase()
+            .Verifiable(Times.Once());
+
+        foodLogRepositoryMock
+            .Setup(r => r.FoodEntrySingleByIdAsync(entryId, ct))
+            .ThrowsAsync(new NotFoundException($"Food entry not found (EntryId: {entryId})."))
+            .Verifiable(Times.Once());
+
+        // Act & Assert
+        var exception = await Assert.ThrowsExceptionAsync<NotFoundException>(
+            () => foodLogServiceMock.Object.GetAlternativeImageForEntryAsync(entryId, ct));
+
+        exception.Message.Should().Contain(entryId.ToString());
+        foodLogServiceMock.VerifyAll();
+        foodLogRepositoryMock.VerifyAll();
+        userProfileRepositoryMock.VerifyAll();
+        foodAnalysisServiceMock.VerifyAll();
+        alternativeImageServiceMock.VerifyAll();
     }
 }

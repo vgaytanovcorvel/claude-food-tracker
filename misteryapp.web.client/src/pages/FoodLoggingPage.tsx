@@ -5,8 +5,10 @@ import {
   createFoodEntry,
   identifyFood,
   analyseEntry,
+  getAlternativeImage,
   type FoodEntrySource,
   type FoodAnalysisResult,
+  type AlternativeImageResult,
 } from '../api/foodLogApi'
 
 export default function FoodLoggingPage() {
@@ -15,8 +17,13 @@ export default function FoodLoggingPage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const identifyAbortRef = useRef<AbortController | null>(null)
   const analyseAbortRef = useRef<AbortController | null>(null)
+  const imageAbortRef = useRef<AbortController | null>(null)
 
-  useEffect(() => () => { analyseAbortRef.current?.abort() }, [])
+  useEffect(() => () => {
+    identifyAbortRef.current?.abort()
+    analyseAbortRef.current?.abort()
+    imageAbortRef.current?.abort()
+  }, [])
 
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [foodName, setFoodName] = useState('')
@@ -28,6 +35,9 @@ export default function FoodLoggingPage() {
   const [analysing, setAnalysing] = useState(false)
   const [analysisResult, setAnalysisResult] = useState<FoodAnalysisResult | null>(null)
   const [savedFoodName, setSavedFoodName] = useState('')
+  const [savedEntryId, setSavedEntryId] = useState<number | null>(null)
+  const [alternativeImage, setAlternativeImage] = useState<AlternativeImageResult | null>(null)
+  const [loadingImage, setLoadingImage] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -83,6 +93,7 @@ export default function FoodLoggingPage() {
     setError(null)
     try {
       const entry = await createFoodEntry(parseInt(userId, 10), foodName.trim(), cal, source)
+      setSavedEntryId(entry.id)
       if (previewUrl) URL.revokeObjectURL(previewUrl)
       setPreviewUrl(null)
       setSavedFoodName(foodName.trim())
@@ -96,6 +107,22 @@ export default function FoodLoggingPage() {
       setAnalysing(false)
       if (result) {
         setAnalysisResult(result)
+        if (!result.compatible && result.alternativeFoodName) {
+          imageAbortRef.current?.abort()
+          const imgController = new AbortController()
+          imageAbortRef.current = imgController
+          setLoadingImage(true)
+          getAlternativeImage(entry.id, imgController.signal)
+            .then(img => {
+              if (!imgController.signal.aborted) {
+                setAlternativeImage(img)
+                setLoadingImage(false)
+              }
+            })
+            .catch(() => {
+              if (!imgController.signal.aborted) setLoadingImage(false)
+            })
+        }
       } else {
         navigate('/')
       }
@@ -161,6 +188,22 @@ export default function FoodLoggingPage() {
                     <span className="text-glass-muted">Try instead: </span>
                     <span className="font-medium">{analysisResult.alternativeFoodName}</span>
                   </p>
+                )}
+
+                {/* AI-generated alternative image */}
+                {!analysisResult.compatible && (
+                  <>
+                    {loadingImage && (
+                      <div className="animate-pulse rounded-xl overflow-hidden h-40 bg-white/10" aria-label="Loading alternative image" />
+                    )}
+                    {!loadingImage && alternativeImage?.imageBase64 && (
+                      <img
+                        src={`data:${alternativeImage.mimeType ?? 'image/png'};base64,${alternativeImage.imageBase64}`}
+                        alt={`Suggested alternative: ${analysisResult.alternativeFoodName ?? ''}`}
+                        className="w-full rounded-xl object-cover max-h-48"
+                      />
+                    )}
+                  </>
                 )}
 
                 <button

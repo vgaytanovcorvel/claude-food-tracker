@@ -20,6 +20,9 @@ public static class ImplementationServiceCollectionExtensions
         services.AddOptions<GeminiOptions>().BindConfiguration(GeminiOptions.Section);
         services.AddHttpClient<IFoodAnalysisService, GeminiFoodAnalysisService>(
             client => client.BaseAddress = new Uri("https://generativelanguage.googleapis.com/"));
+        services.AddOptions<ImagenOptions>().BindConfiguration(ImagenOptions.Section);
+        services.AddHttpClient<IAlternativeImageService, GeminiImagenService>(
+            client => client.BaseAddress = new Uri("https://generativelanguage.googleapis.com/"));
 
         return services;
     }

@@ -10,4 +10,5 @@ public interface IFoodLogService
     Task<FoodAnalysisResult> AnalyseFoodEntryAsync(int entryId, CancellationToken cancellationToken);
     Task<IReadOnlyList<FoodEntry>> GetDailyEntriesAsync(int userId, DateOnly date, CancellationToken cancellationToken);
     Task<DailyLogSummary> GetDailySummaryAsync(int userId, DateOnly date, CancellationToken cancellationToken);
+    Task<AlternativeImageResult> GetAlternativeImageForEntryAsync(int entryId, CancellationToken cancellationToken);
 }

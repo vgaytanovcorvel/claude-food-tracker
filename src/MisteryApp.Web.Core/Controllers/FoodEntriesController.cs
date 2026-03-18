@@ -71,6 +71,17 @@ public class FoodEntriesController(
         return Ok(ApiResponse<DailyLogSummary>.Ok(summary));
     }
 
+    [HttpGet("{id:int}/alternative-image")]
+    [ProducesResponseType(typeof(ApiResponse<AlternativeImageResult>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<AlternativeImageResult>>> GetAlternativeImage(
+        int id,
+        CancellationToken cancellationToken)
+    {
+        var result = await foodLogService.GetAlternativeImageForEntryAsync(id, cancellationToken);
+        return Ok(ApiResponse<AlternativeImageResult>.Ok(result));
+    }
+
     [HttpPost("identify")]
     [ProducesResponseType(typeof(ApiResponse<FoodIdentificationResult>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

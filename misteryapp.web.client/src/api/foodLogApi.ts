@@ -124,3 +124,31 @@ export async function analyseEntry(
     return null
   }
 }
+
+export interface AlternativeImageResult {
+  imageBase64: string | null
+  mimeType: string | null
+}
+
+export async function getAlternativeImage(
+  entryId: number,
+  signal?: AbortSignal
+): Promise<AlternativeImageResult | null> {
+  const cacheKey = `altimg:${entryId}`
+  const cached = sessionStorage.getItem(cacheKey)
+  if (cached) {
+    try { return JSON.parse(cached) } catch { /* ignore */ }
+  }
+  try {
+    const res = await fetch(`/api/food-entries/${entryId}/alternative-image`, { signal })
+    if (!res.ok) return null
+    const json: ApiResponse<AlternativeImageResult> = await res.json()
+    if (!json.success || !json.data) return null
+    if (json.data.imageBase64 !== null) {
+      sessionStorage.setItem(cacheKey, JSON.stringify(json.data))
+    }
+    return json.data
+  } catch {
+    return null
+  }
+}

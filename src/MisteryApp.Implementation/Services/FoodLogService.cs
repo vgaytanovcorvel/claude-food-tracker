@@ -10,6 +10,7 @@ public class FoodLogService(
     IFoodLogRepository foodLogRepository,
     IUserProfileRepository userProfileRepository,
     IFoodAnalysisService foodAnalysisService,
+    IAlternativeImageService alternativeImageService,
     TimeProvider timeProvider) : IFoodLogService
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -48,6 +49,21 @@ public class FoodLogService(
         var json = JsonSerializer.Serialize(result, JsonOptions);
         await foodLogRepository.FoodEntryUpdateAnalysisAsync(entryId, json, cancellationToken);
         return result;
+    }
+
+    public virtual async Task<AlternativeImageResult> GetAlternativeImageForEntryAsync(
+        int entryId, CancellationToken cancellationToken)
+    {
+        var entry = await foodLogRepository.FoodEntrySingleByIdAsync(entryId, cancellationToken);
+        if (entry.AnalysisResult is null)
+            return new AlternativeImageResult(null, null);
+
+        var analysis = JsonSerializer.Deserialize<FoodAnalysisResult>(entry.AnalysisResult, JsonOptions);
+        if (analysis?.AlternativeFoodName is null or { Length: 0 })
+            return new AlternativeImageResult(null, null);
+
+        return await alternativeImageService.GenerateAlternativeImageAsync(
+            analysis.AlternativeFoodName, entry.UserId, cancellationToken);
     }
 
     public virtual async Task<IReadOnlyList<FoodEntry>> GetDailyEntriesAsync(int userId, DateOnly date, CancellationToken cancellationToken)
