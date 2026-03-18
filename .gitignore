@@ -1,0 +1,49 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+*.rsuser
+*.DotSettings.user
+
+## Rider
+.idea/
+
+## Rider / VS Code
+*.launch
+
+## Test results
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
+*.trx
+
+## EF Core migrations output (keep migrations source, not snapshots from other branches)
+# Uncomment if you want to ignore migrations:
+# src/*/Migrations/
+
+## NuGet
+*.nupkg
+*.snupkg
+packages/
+!**/packages/repositories.config
+
+## Build artifacts
+artifacts/
+publish/
+
+## Environment / secrets
+*.env
+appsettings.*.local.json
+secrets.json
+
+## OS
+.DS_Store
+Thumbs.db
+
+## Angular
+src/*.client/node_modules/
+src/*.client/dist/
+src/*.client/.angular/

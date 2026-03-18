@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <RootNamespace>MisteryApp.Implementation</RootNamespace>
+    <AssemblyName>MisteryApp.Implementation</AssemblyName>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="FluentValidation" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MisteryApp.Abstractions\MisteryApp.Abstractions.csproj" />
+    <ProjectReference Include="..\MisteryApp.Common\MisteryApp.Common.csproj" />
+  </ItemGroup>
+</Project>

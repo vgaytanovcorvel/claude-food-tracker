@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <RootNamespace>MisteryApp.Cli</RootNamespace>
+    <AssemblyName>MisteryApp.Cli</AssemblyName>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="System.CommandLine" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MisteryApp.Abstractions\MisteryApp.Abstractions.csproj" />
+    <ProjectReference Include="..\MisteryApp.Implementation\MisteryApp.Implementation.csproj" />
+    <ProjectReference Include="..\MisteryApp.Repository\MisteryApp.Repository.csproj" />
+    <ProjectReference Include="..\MisteryApp.Common\MisteryApp.Common.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,22 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/MisteryApp.Abstractions/MisteryApp.Abstractions.csproj" />
+    <Project Path="src/MisteryApp.Cli/MisteryApp.Cli.csproj" />
+    <Project Path="src/MisteryApp.Common/MisteryApp.Common.csproj" />
+    <Project Path="src/MisteryApp.Implementation/MisteryApp.Implementation.csproj" />
+    <Project Path="src/MisteryApp.Repository/MisteryApp.Repository.csproj" />
+    <Project Path="src/MisteryApp.Web.Api/MisteryApp.Web.Api.csproj" />
+    <Project Path="src/MisteryApp.Web.Core/MisteryApp.Web.Core.csproj" />
+    <Project Path="src/MisteryApp.Web.Server/MisteryApp.Web.Server.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/MisteryApp.Abstractions.Tests/MisteryApp.Abstractions.Tests.csproj" />
+    <Project Path="tests/MisteryApp.Cli.Tests/MisteryApp.Cli.Tests.csproj" />
+    <Project Path="tests/MisteryApp.Common.Tests/MisteryApp.Common.Tests.csproj" />
+    <Project Path="tests/MisteryApp.Implementation.Tests/MisteryApp.Implementation.Tests.csproj" />
+    <Project Path="tests/MisteryApp.Repository.Tests/MisteryApp.Repository.Tests.csproj" />
+    <Project Path="tests/MisteryApp.Web.Api.Tests/MisteryApp.Web.Api.Tests.csproj" />
+    <Project Path="tests/MisteryApp.Web.Core.Tests/MisteryApp.Web.Core.Tests.csproj" />
+    <Project Path="tests/MisteryApp.Web.Server.Tests/MisteryApp.Web.Server.Tests.csproj" />
+  </Folder>
+</Solution>

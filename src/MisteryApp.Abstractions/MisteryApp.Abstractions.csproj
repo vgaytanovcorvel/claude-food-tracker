@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <RootNamespace>MisteryApp.Abstractions</RootNamespace>
+    <AssemblyName>MisteryApp.Abstractions</AssemblyName>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MisteryApp.Common\MisteryApp.Common.csproj" />
+  </ItemGroup>
+</Project>

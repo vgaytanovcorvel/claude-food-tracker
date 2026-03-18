@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <RootNamespace>MisteryApp.Web.Api</RootNamespace>
+    <AssemblyName>MisteryApp.Web.Api</AssemblyName>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Swashbuckle.AspNetCore" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MisteryApp.Web.Core\MisteryApp.Web.Core.csproj" />
+    <ProjectReference Include="..\MisteryApp.Implementation\MisteryApp.Implementation.csproj" />
+    <ProjectReference Include="..\MisteryApp.Repository\MisteryApp.Repository.csproj" />
+  </ItemGroup>
+</Project>
