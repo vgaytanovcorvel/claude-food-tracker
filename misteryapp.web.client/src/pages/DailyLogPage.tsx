@@ -32,6 +32,23 @@ function todayString(): string {
   return `${y}-${m}-${d}`
 }
 
+function getWeekDays(dateStr: string): string[] {
+  const [year, month, day] = dateStr.split('-').map(Number)
+  const d = new Date(year, month - 1, day)
+  // Get Monday of the current week
+  const dayOfWeek = d.getDay() === 0 ? 6 : d.getDay() - 1 // 0=Mon...6=Sun
+  const monday = new Date(year, month - 1, day - dayOfWeek)
+  return Array.from({ length: 7 }, (_, i) => {
+    const curr = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i)
+    const y = curr.getFullYear()
+    const m = String(curr.getMonth() + 1).padStart(2, '0')
+    const dd = String(curr.getDate()).padStart(2, '0')
+    return `${y}-${m}-${dd}`
+  })
+}
+
+const DAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
+
 function parseAnalysis(json: string | null): { compatible: boolean; severity: string } | null {
   if (!json) return null
   try {
@@ -133,6 +150,29 @@ export default function DailyLogPage() {
           >
             →
           </button>
+        </div>
+
+        {/* Week strip — neutral, no streak markers */}
+        <div className="flex justify-between gap-1">
+          {getWeekDays(date).map((day, i) => {
+            const isSelected = day === date
+            return (
+              <button
+                key={day}
+                onClick={() => setDate(day)}
+                className={`flex flex-col items-center flex-1 py-1.5 rounded-lg text-xs transition-colors ${
+                  isSelected
+                    ? 'bg-brand-500/30 text-brand-400 font-semibold'
+                    : 'text-glass-muted hover:bg-white/5'
+                }`}
+                aria-label={day}
+                aria-pressed={isSelected}
+              >
+                <span>{DAY_LABELS[i]}</span>
+                <span>{day.split('-')[2]}</span>
+              </button>
+            )
+          })}
         </div>
 
         {/* Summary strip */}

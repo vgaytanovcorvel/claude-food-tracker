@@ -52,6 +52,15 @@ public class UserProfileRepository(IDbContextFactory<ApplicationDbContext> conte
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
+    public virtual async Task UserProfileUpdateLastActiveAtAsync(int id, DateTime lastActiveAt, CancellationToken cancellationToken)
+    {
+        await using var dbContext = await CreateContextAsync(cancellationToken);
+        var entity = await dbContext.UserProfiles.FirstOrDefaultAsync(u => u.Id == id, cancellationToken)
+            ?? throw new NotFoundException($"User profile not found (UserId: {id}).");
+        entity.LastActiveAt = lastActiveAt;
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
     private static UserProfile MapToDomain(UserProfileEntity entity) =>
         new()
         {

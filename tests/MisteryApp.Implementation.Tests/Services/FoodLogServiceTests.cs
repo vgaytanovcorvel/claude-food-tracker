@@ -75,6 +75,11 @@ public class FoodLogServiceTests
             .ReturnsAsync(expectedEntry)
             .Verifiable(Times.Once());
 
+        userProfileRepositoryMock
+            .Setup(r => r.UserProfileUpdateLastActiveAtAsync(1, expectedNow, cancellationToken))
+            .Returns(Task.CompletedTask)
+            .Verifiable(Times.Once());
+
         // Act
         var result = await foodLogServiceMock.Object.AddFoodEntryAsync(request, cancellationToken);
 
@@ -88,6 +93,7 @@ public class FoodLogServiceTests
         foodLogServiceMock.VerifyAll();
         userProfileRepositoryMock.VerifyAll();
         foodLogRepositoryMock.VerifyAll();
+        foodAnalysisServiceMock.VerifyAll();
     }
 
     [TestMethod]
@@ -116,6 +122,7 @@ public class FoodLogServiceTests
         foodLogServiceMock.VerifyAll();
         userProfileRepositoryMock.VerifyAll();
         foodLogRepositoryMock.VerifyAll();
+        foodAnalysisServiceMock.VerifyAll();
     }
 
     [TestMethod]
@@ -148,6 +155,7 @@ public class FoodLogServiceTests
         foodLogServiceMock.VerifyAll();
         foodLogRepositoryMock.VerifyAll();
         userProfileRepositoryMock.VerifyAll();
+        foodAnalysisServiceMock.VerifyAll();
     }
 
     [TestMethod]
@@ -176,6 +184,7 @@ public class FoodLogServiceTests
         foodLogServiceMock.VerifyAll();
         foodLogRepositoryMock.VerifyAll();
         userProfileRepositoryMock.VerifyAll();
+        foodAnalysisServiceMock.VerifyAll();
     }
 
     [TestMethod]

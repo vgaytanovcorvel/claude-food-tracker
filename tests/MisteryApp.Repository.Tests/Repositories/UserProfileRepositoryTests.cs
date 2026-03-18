@@ -123,5 +123,35 @@ public class UserProfileRepositoryTests
         var result = await repo.UserProfileSingleOrDefaultByIdAsync(added.Id, CancellationToken.None);
         result.Should().BeNull();
     }
+
+    [TestMethod]
+    public async Task UserProfileUpdateLastActiveAtAsync_ShouldUpdateLastActiveAt_WhenUserExists()
+    {
+        // Arrange
+        var repo = new UserProfileRepository(contextFactory);
+        var added = await repo.UserProfileAddAsync(
+            new UserProfile { Name = "Eve", DietStyle = DietStyle.Keto, CreatedAt = DateTime.UtcNow },
+            CancellationToken.None);
+        var newActiveAt = DateTime.UtcNow.AddDays(-2);
+
+        // Act
+        await repo.UserProfileUpdateLastActiveAtAsync(added.Id, newActiveAt, CancellationToken.None);
+
+        // Assert
+        var fetched = await repo.UserProfileSingleOrDefaultByIdAsync(added.Id, CancellationToken.None);
+        fetched!.LastActiveAt.Should().BeCloseTo(newActiveAt, TimeSpan.FromSeconds(1));
+        fetched.Name.Should().Be("Eve"); // other fields untouched
+    }
+
+    [TestMethod]
+    public async Task UserProfileUpdateLastActiveAtAsync_ShouldThrowNotFoundException_WhenUserNotFound()
+    {
+        // Arrange
+        var repo = new UserProfileRepository(contextFactory);
+
+        // Act & Assert
+        await Assert.ThrowsExceptionAsync<NotFoundException>(
+            () => repo.UserProfileUpdateLastActiveAtAsync(999, DateTime.UtcNow, CancellationToken.None));
+    }
 }
 

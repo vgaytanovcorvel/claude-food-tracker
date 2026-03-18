@@ -20,17 +20,18 @@ public class FoodLogService(
     public virtual async Task<FoodEntry> AddFoodEntryAsync(CreateFoodEntryRequest request, CancellationToken cancellationToken)
     {
         await userProfileRepository.UserProfileSingleByIdAsync(request.UserId, cancellationToken);
-
+        var now = timeProvider.GetUtcNow().UtcDateTime;
         var entry = new FoodEntry
         {
             UserId = request.UserId,
             FoodName = request.FoodName,
             EstimatedCalories = request.EstimatedCalories,
             Source = request.Source,
-            LoggedAt = timeProvider.GetUtcNow().UtcDateTime
+            LoggedAt = now
         };
-
-        return await foodLogRepository.FoodEntryAddAsync(entry, cancellationToken);
+        var savedEntry = await foodLogRepository.FoodEntryAddAsync(entry, cancellationToken);
+        await userProfileRepository.UserProfileUpdateLastActiveAtAsync(request.UserId, now, cancellationToken);
+        return savedEntry;
     }
 
     public virtual async Task DeleteFoodEntryAsync(int id, CancellationToken cancellationToken)

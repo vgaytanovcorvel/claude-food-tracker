@@ -9,4 +9,5 @@ public interface IUserProfileRepository
     Task<UserProfile> UserProfileAddAsync(UserProfile profile, CancellationToken cancellationToken);
     Task<UserProfile> UserProfileUpdateAsync(UserProfile profile, CancellationToken cancellationToken);
     Task UserProfileDeleteAsync(int id, CancellationToken cancellationToken);
+    Task UserProfileUpdateLastActiveAtAsync(int id, DateTime lastActiveAt, CancellationToken cancellationToken);
 }

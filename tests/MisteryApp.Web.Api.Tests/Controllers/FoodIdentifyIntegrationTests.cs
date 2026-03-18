@@ -119,6 +119,24 @@ public class FoodIdentifyIntegrationTests
         body.Data.EstimatedCalories.Should().Be(0);
     }
 
+    [TestMethod]
+    public async Task PostIdentify_ShouldNotExposeImageBytesInResponse()
+    {
+        // Arrange — use recognizable unique bytes to detect any leakage
+        var uniqueBytes = System.Text.Encoding.UTF8.GetBytes("UNIQUE-PHOTO-BYTES-MARKER-12345");
+        using var content = BuildImageContent(uniqueBytes);
+
+        // Act
+        var response = await client.PostAsync("/api/food-entries/identify", content);
+        var responseText = await response.Content.ReadAsStringAsync();
+
+        // Assert — response must not contain raw or base64-encoded image bytes
+        var base64Encoded = Convert.ToBase64String(uniqueBytes);
+        responseText.Should().NotContain("UNIQUE-PHOTO-BYTES-MARKER-12345");
+        responseText.Should().NotContain(base64Encoded);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
     private sealed class FakeVisionService(FoodIdentificationResult result) : IVisionFoodIdentificationService
     {
         public Task<FoodIdentificationResult> IdentifyFoodAsync(
