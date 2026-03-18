@@ -38,6 +38,17 @@ public class FoodEntriesController(
         return NoContent();
     }
 
+    [HttpPost("{id:int}/analyse")]
+    [ProducesResponseType(typeof(ApiResponse<FoodAnalysisResult>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<FoodAnalysisResult>>> AnalyseFoodEntry(
+        int id,
+        CancellationToken cancellationToken)
+    {
+        var result = await foodLogService.AnalyseFoodEntryAsync(id, cancellationToken);
+        return Ok(ApiResponse<FoodAnalysisResult>.Ok(result));
+    }
+
     [HttpPost("identify")]
     [ProducesResponseType(typeof(ApiResponse<FoodIdentificationResult>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

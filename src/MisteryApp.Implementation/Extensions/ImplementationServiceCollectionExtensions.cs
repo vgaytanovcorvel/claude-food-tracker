@@ -17,6 +17,9 @@ public static class ImplementationServiceCollectionExtensions
         services.AddOptions<VisionOptions>().BindConfiguration(VisionOptions.Section);
         services.AddHttpClient<IVisionFoodIdentificationService, GoogleVisionFoodIdentificationService>(
             client => client.BaseAddress = new Uri("https://vision.googleapis.com/"));
+        services.AddOptions<GeminiOptions>().BindConfiguration(GeminiOptions.Section);
+        services.AddHttpClient<IFoodAnalysisService, GeminiFoodAnalysisService>(
+            client => client.BaseAddress = new Uri("https://generativelanguage.googleapis.com/"));
 
         return services;
     }

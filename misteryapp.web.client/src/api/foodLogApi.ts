@@ -18,6 +18,13 @@ export interface FoodIdentificationResult {
   confidenceLevel: number
 }
 
+export interface FoodAnalysisResult {
+  compatible: boolean
+  severity: 'None' | 'Low' | 'Medium' | 'High'
+  educationText: string
+  alternativeFoodName: string | null
+}
+
 export async function identifyFood(
   image: File,
   userId: number,
@@ -60,4 +67,22 @@ export async function createFoodEntry(
 
 export async function deleteFoodEntry(id: number): Promise<void> {
   await fetch(`/api/food-entries/${id}`, { method: 'DELETE' })
+}
+
+export async function analyseEntry(
+  entryId: number,
+  signal?: AbortSignal
+): Promise<FoodAnalysisResult | null> {
+  try {
+    const res = await fetch(`/api/food-entries/${entryId}/analyse`, {
+      method: 'POST',
+      signal,
+    })
+    if (!res.ok) return null
+    const json: ApiResponse<FoodAnalysisResult> = await res.json()
+    if (!json.success || !json.data) return null
+    return json.data
+  } catch {
+    return null
+  }
 }

@@ -16,6 +16,7 @@ public class FoodLogServiceTests
 {
     private Mock<IFoodLogRepository> foodLogRepositoryMock = new(MockBehavior.Strict);
     private Mock<IUserProfileRepository> userProfileRepositoryMock = new(MockBehavior.Strict);
+    private Mock<IFoodAnalysisService> foodAnalysisServiceMock = new(MockBehavior.Strict);
     private FakeTimeProvider timeProvider = null!;
     private Mock<FoodLogService> foodLogServiceMock = null!;
 
@@ -26,7 +27,11 @@ public class FoodLogServiceTests
         timeProvider.SetUtcNow(new DateTimeOffset(2026, 3, 18, 12, 0, 0, TimeSpan.Zero));
 
         foodLogServiceMock = new Mock<FoodLogService>(
-            () => new FoodLogService(foodLogRepositoryMock.Object, userProfileRepositoryMock.Object, timeProvider),
+            () => new FoodLogService(
+                foodLogRepositoryMock.Object,
+                userProfileRepositoryMock.Object,
+                foodAnalysisServiceMock.Object,
+                timeProvider),
             MockBehavior.Strict);
     }
 
@@ -171,5 +176,82 @@ public class FoodLogServiceTests
         foodLogServiceMock.VerifyAll();
         foodLogRepositoryMock.VerifyAll();
         userProfileRepositoryMock.VerifyAll();
+    }
+
+    [TestMethod]
+    public async Task AnalyseFoodEntryAsync_ShouldReturnFoodAnalysisResult_WhenEntryAndUserExist()
+    {
+        // Arrange
+        var entryId = 1;
+        var ct = CancellationToken.None;
+        var entry = new FoodEntry { Id = entryId, UserId = 1, FoodName = "Rice Noodles", EstimatedCalories = 350 };
+        var user = new UserProfile { Id = 1, Name = "Alice", DietStyle = DietStyle.Keto };
+        var expectedResult = new FoodAnalysisResult(false, AnalysisSeverity.Medium, "High carb load.", "Zucchini Noodles");
+
+        foodLogServiceMock
+            .Setup(s => s.AnalyseFoodEntryAsync(entryId, ct))
+            .CallBase()
+            .Verifiable(Times.Once());
+
+        foodLogRepositoryMock
+            .Setup(r => r.FoodEntrySingleByIdAsync(entryId, ct))
+            .ReturnsAsync(entry)
+            .Verifiable(Times.Once());
+
+        userProfileRepositoryMock
+            .Setup(r => r.UserProfileSingleByIdAsync(1, ct))
+            .ReturnsAsync(user)
+            .Verifiable(Times.Once());
+
+        foodAnalysisServiceMock
+            .Setup(s => s.AnalyseFoodAsync("Rice Noodles", DietStyle.Keto, ct))
+            .ReturnsAsync(expectedResult)
+            .Verifiable(Times.Once());
+
+        foodLogRepositoryMock
+            .Setup(r => r.FoodEntryUpdateAnalysisAsync(entryId, It.IsAny<string>(), ct))
+            .Returns(Task.CompletedTask)
+            .Verifiable(Times.Once());
+
+        // Act
+        var result = await foodLogServiceMock.Object.AnalyseFoodEntryAsync(entryId, ct);
+
+        // Assert
+        result.Compatible.Should().BeFalse();
+        result.Severity.Should().Be(AnalysisSeverity.Medium);
+        result.EducationText.Should().Be("High carb load.");
+        result.AlternativeFoodName.Should().Be("Zucchini Noodles");
+        foodLogServiceMock.VerifyAll();
+        foodLogRepositoryMock.VerifyAll();
+        userProfileRepositoryMock.VerifyAll();
+        foodAnalysisServiceMock.VerifyAll();
+    }
+
+    [TestMethod]
+    public async Task AnalyseFoodEntryAsync_ShouldThrowNotFoundException_WhenEntryNotFound()
+    {
+        // Arrange
+        var entryId = 999;
+        var ct = CancellationToken.None;
+
+        foodLogServiceMock
+            .Setup(s => s.AnalyseFoodEntryAsync(entryId, ct))
+            .CallBase()
+            .Verifiable(Times.Once());
+
+        foodLogRepositoryMock
+            .Setup(r => r.FoodEntrySingleByIdAsync(entryId, ct))
+            .ThrowsAsync(new NotFoundException($"Food entry not found (EntryId: {entryId})."))
+            .Verifiable(Times.Once());
+
+        // Act & Assert
+        var exception = await Assert.ThrowsExceptionAsync<NotFoundException>(
+            () => foodLogServiceMock.Object.AnalyseFoodEntryAsync(entryId, ct));
+
+        exception.Message.Should().Contain(entryId.ToString());
+        foodLogServiceMock.VerifyAll();
+        foodLogRepositoryMock.VerifyAll();
+        userProfileRepositoryMock.VerifyAll();
+        foodAnalysisServiceMock.VerifyAll();
     }
 }
