@@ -4,6 +4,7 @@ import HomePage from './pages/HomePage'
 import OnboardingPage from './pages/OnboardingPage'
 import ProfilePage from './pages/ProfilePage'
 import FoodLoggingPage from './pages/FoodLoggingPage'
+import DailyLogPage from './pages/DailyLogPage'
 
 function ProtectedRoute({ element }: { element: React.ReactElement }) {
   const { userId } = useIdentity()
@@ -17,6 +18,7 @@ export default function App() {
         <Route path="/onboarding" element={<OnboardingPage />} />
         <Route path="/profile" element={<ProtectedRoute element={<ProfilePage />} />} />
         <Route path="/food-log" element={<ProtectedRoute element={<FoodLoggingPage />} />} />
+        <Route path="/daily-log" element={<ProtectedRoute element={<DailyLogPage />} />} />
         <Route path="/" element={<ProtectedRoute element={<HomePage />} />} />
       </Routes>
     </BrowserRouter>

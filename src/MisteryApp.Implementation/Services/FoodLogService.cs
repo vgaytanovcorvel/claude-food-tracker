@@ -48,4 +48,28 @@ public class FoodLogService(
         await foodLogRepository.FoodEntryUpdateAnalysisAsync(entryId, json, cancellationToken);
         return result;
     }
+
+    public virtual async Task<IReadOnlyList<FoodEntry>> GetDailyEntriesAsync(int userId, DateOnly date, CancellationToken cancellationToken)
+    {
+        return await foodLogRepository.FoodEntryGetByUserAndDateAsync(userId, date, cancellationToken);
+    }
+
+    public virtual async Task<DailyLogSummary> GetDailySummaryAsync(int userId, DateOnly date, CancellationToken cancellationToken)
+    {
+        var entries = await foodLogRepository.FoodEntryGetByUserAndDateAsync(userId, date, cancellationToken);
+        var totalCalories = entries.Sum(e => e.EstimatedCalories);
+        int onGoalCount = 0, conflictCount = 0;
+        foreach (var entry in entries.Where(e => e.AnalysisResult is not null))
+        {
+            var result = JsonSerializer.Deserialize<FoodAnalysisResult>(entry.AnalysisResult!, JsonOptions);
+            if (result is null) continue;
+            if (result.Compatible) onGoalCount++;
+            else conflictCount++;
+        }
+        var analysedCount = onGoalCount + conflictCount;
+        var complianceLabel = analysedCount == 0
+            ? "No meals analysed yet"
+            : $"{onGoalCount} of {analysedCount} meals on goal";
+        return new DailyLogSummary(date, totalCalories, onGoalCount, conflictCount, complianceLabel);
+    }
 }

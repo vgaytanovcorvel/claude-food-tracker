@@ -254,4 +254,115 @@ public class FoodLogServiceTests
         userProfileRepositoryMock.VerifyAll();
         foodAnalysisServiceMock.VerifyAll();
     }
+
+    [TestMethod]
+    public async Task GetDailyEntriesAsync_ShouldReturnEntriesFromRepository_WhenCalled()
+    {
+        // Arrange
+        var userId = 1;
+        var date = new DateOnly(2026, 3, 18);
+        var ct = CancellationToken.None;
+        var expectedEntries = new List<FoodEntry>
+        {
+            new() { Id = 1, UserId = userId, FoodName = "Eggs", EstimatedCalories = 200 },
+            new() { Id = 2, UserId = userId, FoodName = "Coffee", EstimatedCalories = 10 }
+        };
+
+        foodLogServiceMock
+            .Setup(s => s.GetDailyEntriesAsync(userId, date, ct))
+            .CallBase()
+            .Verifiable(Times.Once());
+
+        foodLogRepositoryMock
+            .Setup(r => r.FoodEntryGetByUserAndDateAsync(userId, date, ct))
+            .ReturnsAsync(expectedEntries)
+            .Verifiable(Times.Once());
+
+        // Act
+        var result = await foodLogServiceMock.Object.GetDailyEntriesAsync(userId, date, ct);
+
+        // Assert
+        result.Should().HaveCount(2);
+        result.Should().Contain(e => e.FoodName == "Eggs");
+        foodLogServiceMock.VerifyAll();
+        foodLogRepositoryMock.VerifyAll();
+        userProfileRepositoryMock.VerifyAll();
+        foodAnalysisServiceMock.VerifyAll();
+    }
+
+    [TestMethod]
+    public async Task GetDailySummaryAsync_ShouldReturnCorrectCounts_WhenEntriesHaveAnalysis()
+    {
+        // Arrange
+        var userId = 1;
+        var date = new DateOnly(2026, 3, 18);
+        var ct = CancellationToken.None;
+        var compatibleJson = """{"Compatible":true,"Severity":"None","EducationText":"Great!","AlternativeFoodName":null}""";
+        var conflictJson = """{"Compatible":false,"Severity":"Medium","EducationText":"High carbs.","AlternativeFoodName":"Zucchini Noodles"}""";
+        var entries = new List<FoodEntry>
+        {
+            new() { Id = 1, UserId = userId, FoodName = "Chicken", EstimatedCalories = 300, AnalysisResult = compatibleJson },
+            new() { Id = 2, UserId = userId, FoodName = "Rice", EstimatedCalories = 350, AnalysisResult = conflictJson },
+            new() { Id = 3, UserId = userId, FoodName = "Water", EstimatedCalories = 0, AnalysisResult = null }
+        };
+
+        foodLogServiceMock
+            .Setup(s => s.GetDailySummaryAsync(userId, date, ct))
+            .CallBase()
+            .Verifiable(Times.Once());
+
+        foodLogRepositoryMock
+            .Setup(r => r.FoodEntryGetByUserAndDateAsync(userId, date, ct))
+            .ReturnsAsync(entries)
+            .Verifiable(Times.Once());
+
+        // Act
+        var result = await foodLogServiceMock.Object.GetDailySummaryAsync(userId, date, ct);
+
+        // Assert
+        result.TotalCalories.Should().Be(650);
+        result.OnGoalCount.Should().Be(1);
+        result.ConflictCount.Should().Be(1);
+        result.ComplianceLabel.Should().Be("1 of 2 meals on goal");
+        foodLogServiceMock.VerifyAll();
+        foodLogRepositoryMock.VerifyAll();
+        userProfileRepositoryMock.VerifyAll();
+        foodAnalysisServiceMock.VerifyAll();
+    }
+
+    [TestMethod]
+    public async Task GetDailySummaryAsync_ShouldReturnNoAnalysisLabel_WhenNoEntriesHaveAnalysis()
+    {
+        // Arrange
+        var userId = 1;
+        var date = new DateOnly(2026, 3, 18);
+        var ct = CancellationToken.None;
+        var entries = new List<FoodEntry>
+        {
+            new() { Id = 1, UserId = userId, FoodName = "Water", EstimatedCalories = 0, AnalysisResult = null }
+        };
+
+        foodLogServiceMock
+            .Setup(s => s.GetDailySummaryAsync(userId, date, ct))
+            .CallBase()
+            .Verifiable(Times.Once());
+
+        foodLogRepositoryMock
+            .Setup(r => r.FoodEntryGetByUserAndDateAsync(userId, date, ct))
+            .ReturnsAsync(entries)
+            .Verifiable(Times.Once());
+
+        // Act
+        var result = await foodLogServiceMock.Object.GetDailySummaryAsync(userId, date, ct);
+
+        // Assert
+        result.TotalCalories.Should().Be(0);
+        result.OnGoalCount.Should().Be(0);
+        result.ConflictCount.Should().Be(0);
+        result.ComplianceLabel.Should().Be("No meals analysed yet");
+        foodLogServiceMock.VerifyAll();
+        foodLogRepositoryMock.VerifyAll();
+        userProfileRepositoryMock.VerifyAll();
+        foodAnalysisServiceMock.VerifyAll();
+    }
 }

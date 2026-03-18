@@ -146,4 +146,41 @@ public class FoodLogRepositoryTests
         await Assert.ThrowsExceptionAsync<NotFoundException>(
             () => repo.FoodEntryUpdateAnalysisAsync(9999, "{}", CancellationToken.None));
     }
+
+    [TestMethod]
+    public async Task FoodEntryGetByUserAndDateAsync_ShouldReturnEntries_WhenTheyExistForDate()
+    {
+        // Arrange
+        var repo = new FoodLogRepository(contextFactory);
+        var targetDate = new DateOnly(2026, 3, 18);
+        var loggedAt = new DateTime(2026, 3, 18, 12, 0, 0, DateTimeKind.Utc);
+        await repo.FoodEntryAddAsync(
+            new FoodEntry { UserId = seededUserId, FoodName = "Eggs", EstimatedCalories = 200, Source = FoodEntrySource.Manual, LoggedAt = loggedAt },
+            CancellationToken.None);
+        await repo.FoodEntryAddAsync(
+            new FoodEntry { UserId = seededUserId, FoodName = "Coffee", EstimatedCalories = 10, Source = FoodEntrySource.Manual, LoggedAt = loggedAt },
+            CancellationToken.None);
+
+        // Act
+        var result = await repo.FoodEntryGetByUserAndDateAsync(seededUserId, targetDate, CancellationToken.None);
+
+        // Assert
+        result.Should().HaveCount(2);
+        result.Should().Contain(e => e.FoodName == "Eggs");
+        result.Should().Contain(e => e.FoodName == "Coffee");
+    }
+
+    [TestMethod]
+    public async Task FoodEntryGetByUserAndDateAsync_ShouldReturnEmpty_WhenNoEntriesForDate()
+    {
+        // Arrange
+        var repo = new FoodLogRepository(contextFactory);
+        var emptyDate = new DateOnly(2026, 1, 1);
+
+        // Act
+        var result = await repo.FoodEntryGetByUserAndDateAsync(seededUserId, emptyDate, CancellationToken.None);
+
+        // Assert
+        result.Should().BeEmpty();
+    }
 }

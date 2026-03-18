@@ -69,6 +69,44 @@ export async function deleteFoodEntry(id: number): Promise<void> {
   await fetch(`/api/food-entries/${id}`, { method: 'DELETE' })
 }
 
+export interface DailyLogSummary {
+  date: string
+  totalCalories: number
+  onGoalCount: number
+  conflictCount: number
+  complianceLabel: string
+}
+
+export async function getDailyEntries(
+  userId: number,
+  date: string,
+  signal?: AbortSignal
+): Promise<FoodEntry[]> {
+  try {
+    const res = await fetch(`/api/food-entries?userId=${userId}&date=${date}`, { signal })
+    if (!res.ok) return []
+    const json: ApiResponse<FoodEntry[]> = await res.json()
+    return json.success && json.data ? json.data : []
+  } catch {
+    return []
+  }
+}
+
+export async function getDailySummary(
+  userId: number,
+  date: string,
+  signal?: AbortSignal
+): Promise<DailyLogSummary | null> {
+  try {
+    const res = await fetch(`/api/food-entries/summary?userId=${userId}&date=${date}`, { signal })
+    if (!res.ok) return null
+    const json: ApiResponse<DailyLogSummary> = await res.json()
+    return json.success && json.data ? json.data : null
+  } catch {
+    return null
+  }
+}
+
 export async function analyseEntry(
   entryId: number,
   signal?: AbortSignal

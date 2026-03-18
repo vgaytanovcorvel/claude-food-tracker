@@ -25,6 +25,12 @@ export default function HomePage() {
             >
               Edit profile
             </Link>
+            <Link
+              to="/daily-log"
+              className="inline-block text-brand-500 hover:underline text-sm"
+            >
+              Today's log
+            </Link>
           </div>
         )}
       </div>

@@ -49,6 +49,28 @@ public class FoodEntriesController(
         return Ok(ApiResponse<FoodAnalysisResult>.Ok(result));
     }
 
+    [HttpGet]
+    [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<FoodEntry>>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<IReadOnlyList<FoodEntry>>>> GetDailyEntries(
+        [FromQuery] int userId,
+        [FromQuery] DateOnly date,
+        CancellationToken cancellationToken)
+    {
+        var entries = await foodLogService.GetDailyEntriesAsync(userId, date, cancellationToken);
+        return Ok(ApiResponse<IReadOnlyList<FoodEntry>>.Ok(entries));
+    }
+
+    [HttpGet("summary")]
+    [ProducesResponseType(typeof(ApiResponse<DailyLogSummary>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<DailyLogSummary>>> GetDailySummary(
+        [FromQuery] int userId,
+        [FromQuery] DateOnly date,
+        CancellationToken cancellationToken)
+    {
+        var summary = await foodLogService.GetDailySummaryAsync(userId, date, cancellationToken);
+        return Ok(ApiResponse<DailyLogSummary>.Ok(summary));
+    }
+
     [HttpPost("identify")]
     [ProducesResponseType(typeof(ApiResponse<FoodIdentificationResult>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
