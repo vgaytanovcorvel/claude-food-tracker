@@ -1,3 +1,6 @@
+import type { ApiResponse } from './types'
+
+export type { ApiResponse }
 export type DietStyle = 'Keto' | 'LowFat' | 'Mediterranean'
 
 export interface UserProfile {
@@ -6,13 +9,6 @@ export interface UserProfile {
   dietStyle: DietStyle
   createdAt: string
   lastActiveAt: string | null
-}
-
-export interface ApiResponse<T> {
-  success: boolean
-  data: T | null
-  error: string | null
-  statusCode: number
 }
 
 export async function createUserProfile(name: string, dietStyle: DietStyle): Promise<UserProfile> {

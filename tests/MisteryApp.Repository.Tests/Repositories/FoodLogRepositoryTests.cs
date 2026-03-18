@@ -1,0 +1,120 @@
+using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using MisteryApp.Abstractions.Enums;
+using MisteryApp.Abstractions.Exceptions;
+using MisteryApp.Abstractions.Models;
+using MisteryApp.Repository.Contexts;
+using MisteryApp.Repository.Entities;
+using MisteryApp.Repository.Repositories;
+
+namespace MisteryApp.Repository.Tests.Repositories;
+
+[TestClass]
+public class FoodLogRepositoryTests
+{
+    private IDbContextFactory<ApplicationDbContext> contextFactory = null!;
+    private int seededUserId;
+
+    [TestInitialize]
+    public async Task Setup()
+    {
+        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+            .Options;
+        contextFactory = new TestDbContextFactory(options);
+
+        // Seed a user (let EF generate the Id) so food entries have a valid UserId
+        await using var ctx = await contextFactory.CreateDbContextAsync();
+        var user = ctx.UserProfiles.Add(new UserProfileEntity
+        {
+            Name = "Alice",
+            DietStyle = "Keto",
+            CreatedAt = DateTime.UtcNow
+        });
+        await ctx.SaveChangesAsync();
+        seededUserId = user.Entity.Id;
+    }
+
+    [TestMethod]
+    public async Task FoodEntryAddAsync_ShouldPersistAndReturnEntry_WhenCalled()
+    {
+        // Arrange
+        var repo = new FoodLogRepository(contextFactory);
+        var entry = new FoodEntry
+        {
+            UserId = seededUserId,
+            FoodName = "Chicken breast",
+            EstimatedCalories = 300,
+            Source = FoodEntrySource.Manual,
+            LoggedAt = DateTime.UtcNow
+        };
+
+        // Act
+        var result = await repo.FoodEntryAddAsync(entry, CancellationToken.None);
+
+        // Assert
+        result.Id.Should().BeGreaterThan(0);
+        result.FoodName.Should().Be("Chicken breast");
+        result.EstimatedCalories.Should().Be(300);
+        result.Source.Should().Be(FoodEntrySource.Manual);
+    }
+
+    [TestMethod]
+    public async Task FoodEntrySingleOrDefaultByIdAsync_ShouldReturnEntry_WhenExists()
+    {
+        // Arrange
+        var repo = new FoodLogRepository(contextFactory);
+        var added = await repo.FoodEntryAddAsync(
+            new FoodEntry { UserId = seededUserId, FoodName = "Salad", EstimatedCalories = 120, Source = FoodEntrySource.Manual, LoggedAt = DateTime.UtcNow },
+            CancellationToken.None);
+
+        // Act
+        var result = await repo.FoodEntrySingleOrDefaultByIdAsync(added.Id, CancellationToken.None);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.FoodName.Should().Be("Salad");
+    }
+
+    [TestMethod]
+    public async Task FoodEntrySingleOrDefaultByIdAsync_ShouldReturnNull_WhenNotFound()
+    {
+        // Arrange
+        var repo = new FoodLogRepository(contextFactory);
+
+        // Act
+        var result = await repo.FoodEntrySingleOrDefaultByIdAsync(9999, CancellationToken.None);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [TestMethod]
+    public async Task FoodEntrySingleByIdAsync_ShouldThrowNotFoundException_WhenNotFound()
+    {
+        // Arrange
+        var repo = new FoodLogRepository(contextFactory);
+
+        // Act & Assert
+        await Assert.ThrowsExceptionAsync<NotFoundException>(
+            () => repo.FoodEntrySingleByIdAsync(9999, CancellationToken.None));
+    }
+
+    [TestMethod]
+    public async Task FoodEntryDeleteAsync_ShouldRemoveEntry_WhenCalled()
+    {
+        // Arrange
+        var repo = new FoodLogRepository(contextFactory);
+        var added = await repo.FoodEntryAddAsync(
+            new FoodEntry { UserId = seededUserId, FoodName = "Pizza", EstimatedCalories = 600, Source = FoodEntrySource.Photo, LoggedAt = DateTime.UtcNow },
+            CancellationToken.None);
+
+        // Act
+        await repo.FoodEntryDeleteAsync(added.Id, CancellationToken.None);
+
+        // Assert
+        var result = await repo.FoodEntrySingleOrDefaultByIdAsync(added.Id, CancellationToken.None);
+        result.Should().BeNull();
+    }
+}

@@ -16,6 +16,7 @@ public static class PersistenceServiceCollectionExtensions
             options.UseSqlite(configuration.GetConnectionString("DefaultConnection")));
 
         services.AddScoped<IUserProfileRepository, UserProfileRepository>();
+        services.AddScoped<IFoodLogRepository, FoodLogRepository>();
 
         return services;
     }

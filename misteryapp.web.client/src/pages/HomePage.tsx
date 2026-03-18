@@ -12,12 +12,20 @@ export default function HomePage() {
           {userId ? 'Welcome back.' : 'Track your food habits.'}
         </p>
         {userId && (
-          <Link
-            to="/profile"
-            className="inline-block text-brand-500 hover:underline text-sm"
-          >
-            Edit profile
-          </Link>
+          <div className="flex gap-4">
+            <Link
+              to="/food-log"
+              className="inline-block text-brand-500 hover:underline text-sm"
+            >
+              Log food
+            </Link>
+            <Link
+              to="/profile"
+              className="inline-block text-brand-500 hover:underline text-sm"
+            >
+              Edit profile
+            </Link>
+          </div>
         )}
       </div>
     </div>

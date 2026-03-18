@@ -11,6 +11,7 @@ public static class ImplementationServiceCollectionExtensions
         services.AddSingleton(TimeProvider.System);
         services.AddValidatorsFromAssembly(typeof(ImplementationServiceCollectionExtensions).Assembly);
         services.AddScoped<IUserProfileService, UserProfileService>();
+        services.AddScoped<IFoodLogService, FoodLogService>();
 
         return services;
     }

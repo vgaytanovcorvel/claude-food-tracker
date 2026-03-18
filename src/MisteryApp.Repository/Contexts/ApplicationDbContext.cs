@@ -7,6 +7,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     : DbContext(options)
 {
     public DbSet<UserProfileEntity> UserProfiles => Set<UserProfileEntity>();
+    public DbSet<FoodLogEntity> FoodLog => Set<FoodLogEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
