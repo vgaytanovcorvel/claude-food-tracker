@@ -1,4 +1,6 @@
 using FluentValidation;
+using MisteryApp.Abstractions.Interfaces;
+using MisteryApp.Implementation.Services;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -8,6 +10,7 @@ public static class ImplementationServiceCollectionExtensions
     {
         services.AddSingleton(TimeProvider.System);
         services.AddValidatorsFromAssembly(typeof(ImplementationServiceCollectionExtensions).Assembly);
+        services.AddScoped<IUserProfileService, UserProfileService>();
 
         return services;
     }
