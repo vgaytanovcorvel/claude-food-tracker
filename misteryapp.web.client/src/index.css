@@ -17,4 +17,29 @@
   .glass-surface-lg {
     @apply bg-glass-white backdrop-blur-glass border border-glass-border rounded-3xl shadow-glass-lg;
   }
+
+  .glass-modal {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 1.5rem;
+    box-shadow:
+      0 24px 64px rgba(0, 0, 0, 0.5),
+      0 8px 24px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+  }
+
+  .input-glass {
+    @apply w-full bg-white/[0.07] border border-white/[0.12] rounded-xl px-4 py-3
+           text-white placeholder:text-white/25
+           transition-all duration-200
+           focus:outline-none focus:bg-white/[0.10] focus:border-brand-500/60;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
+  }
+
+  .input-glass:focus {
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2), inset 0 1px 2px rgba(0,0,0,0.2);
+  }
 }

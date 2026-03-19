@@ -140,8 +140,8 @@ export default function FoodLoggingPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center p-6">
-      <div className="glass-surface-lg w-full max-w-md p-8 space-y-5">
-        <h1 className="text-display-md text-glass-text">Log Food</h1>
+      <div className="glass-modal w-full max-w-md p-10 space-y-6">
+        <h1 className="text-display-md text-white font-bold tracking-tight">Log Food</h1>
 
         {/* Analysis phase */}
         {showAnalysisPhase && (
@@ -252,19 +252,21 @@ export default function FoodLoggingPage() {
         {!showAnalysisPhase && (
           <>
             {/* Photo capture / file picker */}
-            <div>
-              <div className="relative">
-                <div className="w-full py-2 px-4 text-center rounded-lg border border-glass-border text-glass-muted text-sm">
-                  {previewUrl ? 'Change photo' : 'Take or upload photo (optional)'}
-                </div>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                />
+            <div className="relative">
+              <div className="w-full py-5 px-4 rounded-xl border-2 border-dashed border-white/20 hover:border-brand-500/50 transition-colors flex flex-col items-center justify-center gap-2 text-white/40 hover:text-white/60 cursor-pointer">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                  <circle cx="12" cy="13" r="4"/>
+                </svg>
+                <span className="text-sm">{previewUrl ? 'Change photo' : 'Take or upload a photo'}</span>
               </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+              />
             </div>
 
             {/* Local preview */}
@@ -294,11 +296,11 @@ export default function FoodLoggingPage() {
             {/* Food name + calories fields — hidden while skeleton is shown */}
             {!identifying && (
               <>
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <label htmlFor="food-name" className="text-sm text-glass-muted">Food name</label>
+                    <label htmlFor="food-name" className="text-xs font-semibold text-white/55 uppercase tracking-wider">Food name</label>
                     {aiIdentified && (
-                      <span className="text-xs text-brand-400">AI identified — you can edit</span>
+                      <span className="text-xs text-brand-400 font-medium">AI identified — you can edit</span>
                     )}
                   </div>
                   <input
@@ -307,13 +309,13 @@ export default function FoodLoggingPage() {
                     value={foodName}
                     onChange={e => { setFoodName(e.target.value); setAiIdentified(false) }}
                     placeholder="e.g. Chicken breast"
-                    className="w-full bg-white/10 border border-glass-border rounded-lg px-3 py-2 text-glass-text placeholder:text-glass-muted focus:outline-none focus:ring-1 focus:ring-brand-500"
+                    className="input-glass"
                   />
                 </div>
 
-                <div className="space-y-1">
-                  <label htmlFor="calories" className="text-sm text-glass-muted">
-                    Estimated calories{aiIdentified ? ' (~estimate)' : ''}
+                <div className="space-y-1.5">
+                  <label htmlFor="calories" className="text-xs font-semibold text-white/55 uppercase tracking-wider">
+                    Estimated calories{aiIdentified ? ' · AI estimate' : ''}
                   </label>
                   <input
                     id="calories"
@@ -324,7 +326,7 @@ export default function FoodLoggingPage() {
                     value={calories}
                     onChange={e => setCalories(e.target.value)}
                     placeholder="e.g. 300"
-                    className="w-full bg-white/10 border border-glass-border rounded-lg px-3 py-2 text-glass-text placeholder:text-glass-muted focus:outline-none focus:ring-1 focus:ring-brand-500"
+                    className="input-glass"
                   />
                 </div>
               </>
@@ -332,17 +334,17 @@ export default function FoodLoggingPage() {
 
             {error && <p className="text-red-400 text-sm">{error}</p>}
 
-            <div className="flex gap-3">
+            <div className="flex gap-3 pt-1">
               <button
                 onClick={() => { if (previewUrl) URL.revokeObjectURL(previewUrl); navigate('/') }}
-                className="flex-1 py-2 rounded-lg border border-glass-border text-glass-muted hover:bg-white/10 transition text-sm"
+                className="flex-1 py-3 rounded-xl border border-white/20 text-white/55 hover:bg-white/10 hover:text-white/80 hover:border-white/30 transition-all duration-200 text-sm font-medium"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSave}
                 disabled={saving || identifying}
-                className="flex-1 py-2 rounded-lg bg-brand-500 text-white hover:bg-brand-600 transition disabled:opacity-50 text-sm"
+                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-brand-500 to-brand-600 hover:from-sky-400 hover:to-brand-500 text-white font-semibold text-sm shadow-btn-brand transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {saving ? 'Saving…' : 'Save'}
               </button>

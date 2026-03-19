@@ -29,10 +29,14 @@ export default {
       },
       backdropBlur: {
         glass: '12px',
+        'glass-xl': '24px',
       },
       boxShadow: {
         glass: '0 4px 24px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.2)',
         'glass-lg': '0 8px 40px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.25)',
+        'glass-float': '0 24px 64px rgba(0,0,0,0.45), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.12)',
+        'input-focus': '0 0 0 3px rgba(14,165,233,0.25)',
+        'btn-brand': '0 4px 20px rgba(14,165,233,0.35)',
       },
     },
   },
