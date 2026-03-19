@@ -82,8 +82,9 @@ export async function getDailyEntries(
   date: string,
   signal?: AbortSignal
 ): Promise<FoodEntry[]> {
+  const tz = new Date().getTimezoneOffset()
   try {
-    const res = await fetch(`/api/food-entries?userId=${userId}&date=${date}`, { signal })
+    const res = await fetch(`/api/food-entries?userId=${userId}&date=${date}&timezoneOffsetMinutes=${tz}`, { signal })
     if (!res.ok) return []
     const json: ApiResponse<FoodEntry[]> = await res.json()
     return json.success && json.data ? json.data : []
@@ -97,8 +98,9 @@ export async function getDailySummary(
   date: string,
   signal?: AbortSignal
 ): Promise<DailyLogSummary | null> {
+  const tz = new Date().getTimezoneOffset()
   try {
-    const res = await fetch(`/api/food-entries/summary?userId=${userId}&date=${date}`, { signal })
+    const res = await fetch(`/api/food-entries/summary?userId=${userId}&date=${date}&timezoneOffsetMinutes=${tz}`, { signal })
     if (!res.ok) return null
     const json: ApiResponse<DailyLogSummary> = await res.json()
     return json.success && json.data ? json.data : null

@@ -54,9 +54,10 @@ public class FoodEntriesController(
     public async Task<ActionResult<ApiResponse<IReadOnlyList<FoodEntry>>>> GetDailyEntries(
         [FromQuery] int userId,
         [FromQuery] DateOnly date,
-        CancellationToken cancellationToken)
+        [FromQuery] int timezoneOffsetMinutes = 0,
+        CancellationToken cancellationToken = default)
     {
-        var entries = await foodLogService.GetDailyEntriesAsync(userId, date, cancellationToken);
+        var entries = await foodLogService.GetDailyEntriesAsync(userId, date, timezoneOffsetMinutes, cancellationToken);
         return Ok(ApiResponse<IReadOnlyList<FoodEntry>>.Ok(entries));
     }
 
@@ -65,9 +66,10 @@ public class FoodEntriesController(
     public async Task<ActionResult<ApiResponse<DailyLogSummary>>> GetDailySummary(
         [FromQuery] int userId,
         [FromQuery] DateOnly date,
-        CancellationToken cancellationToken)
+        [FromQuery] int timezoneOffsetMinutes = 0,
+        CancellationToken cancellationToken = default)
     {
-        var summary = await foodLogService.GetDailySummaryAsync(userId, date, cancellationToken);
+        var summary = await foodLogService.GetDailySummaryAsync(userId, date, timezoneOffsetMinutes, cancellationToken);
         return Ok(ApiResponse<DailyLogSummary>.Ok(summary));
     }
 

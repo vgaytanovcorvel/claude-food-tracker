@@ -162,7 +162,7 @@ public class FoodLogRepositoryTests
             CancellationToken.None);
 
         // Act
-        var result = await repo.FoodEntryGetByUserAndDateAsync(seededUserId, targetDate, CancellationToken.None);
+        var result = await repo.FoodEntryGetByUserAndDateAsync(seededUserId, targetDate, 0, CancellationToken.None);
 
         // Assert
         result.Should().HaveCount(2);
@@ -178,7 +178,7 @@ public class FoodLogRepositoryTests
         var emptyDate = new DateOnly(2026, 1, 1);
 
         // Act
-        var result = await repo.FoodEntryGetByUserAndDateAsync(seededUserId, emptyDate, CancellationToken.None);
+        var result = await repo.FoodEntryGetByUserAndDateAsync(seededUserId, emptyDate, 0, CancellationToken.None);
 
         // Assert
         result.Should().BeEmpty();

@@ -1,4 +1,5 @@
 using System.Net;
+using System.Text.Json.Serialization;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Mvc;
 using MisteryApp.Abstractions.Models;
@@ -10,6 +11,8 @@ public static class WebCoreServiceCollectionExtensions
     public static IServiceCollection AddWebCore(this IServiceCollection services)
     {
         services.AddControllers()
+            .AddJsonOptions(options =>
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()))
             .ConfigureApiBehaviorOptions(options =>
             {
                 options.InvalidModelStateResponseFactory = context =>

@@ -66,14 +66,14 @@ public class FoodLogService(
             analysis.AlternativeFoodName, entry.UserId, cancellationToken);
     }
 
-    public virtual async Task<IReadOnlyList<FoodEntry>> GetDailyEntriesAsync(int userId, DateOnly date, CancellationToken cancellationToken)
+    public virtual async Task<IReadOnlyList<FoodEntry>> GetDailyEntriesAsync(int userId, DateOnly date, int timezoneOffsetMinutes, CancellationToken cancellationToken)
     {
-        return await foodLogRepository.FoodEntryGetByUserAndDateAsync(userId, date, cancellationToken);
+        return await foodLogRepository.FoodEntryGetByUserAndDateAsync(userId, date, timezoneOffsetMinutes, cancellationToken);
     }
 
-    public virtual async Task<DailyLogSummary> GetDailySummaryAsync(int userId, DateOnly date, CancellationToken cancellationToken)
+    public virtual async Task<DailyLogSummary> GetDailySummaryAsync(int userId, DateOnly date, int timezoneOffsetMinutes, CancellationToken cancellationToken)
     {
-        var entries = await foodLogRepository.FoodEntryGetByUserAndDateAsync(userId, date, cancellationToken);
+        var entries = await foodLogRepository.FoodEntryGetByUserAndDateAsync(userId, date, timezoneOffsetMinutes, cancellationToken);
         var totalCalories = entries.Sum(e => e.EstimatedCalories);
         int onGoalCount = 0, conflictCount = 0;
         foreach (var entry in entries.Where(e => e.AnalysisResult is not null))

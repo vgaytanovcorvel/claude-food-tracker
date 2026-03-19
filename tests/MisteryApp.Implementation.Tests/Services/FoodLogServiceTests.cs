@@ -286,17 +286,17 @@ public class FoodLogServiceTests
         };
 
         foodLogServiceMock
-            .Setup(s => s.GetDailyEntriesAsync(userId, date, ct))
+            .Setup(s => s.GetDailyEntriesAsync(userId, date, 0, ct))
             .CallBase()
             .Verifiable(Times.Once());
 
         foodLogRepositoryMock
-            .Setup(r => r.FoodEntryGetByUserAndDateAsync(userId, date, ct))
+            .Setup(r => r.FoodEntryGetByUserAndDateAsync(userId, date, 0, ct))
             .ReturnsAsync(expectedEntries)
             .Verifiable(Times.Once());
 
         // Act
-        var result = await foodLogServiceMock.Object.GetDailyEntriesAsync(userId, date, ct);
+        var result = await foodLogServiceMock.Object.GetDailyEntriesAsync(userId, date, 0, ct);
 
         // Assert
         result.Should().HaveCount(2);
@@ -325,17 +325,17 @@ public class FoodLogServiceTests
         };
 
         foodLogServiceMock
-            .Setup(s => s.GetDailySummaryAsync(userId, date, ct))
+            .Setup(s => s.GetDailySummaryAsync(userId, date, 0, ct))
             .CallBase()
             .Verifiable(Times.Once());
 
         foodLogRepositoryMock
-            .Setup(r => r.FoodEntryGetByUserAndDateAsync(userId, date, ct))
+            .Setup(r => r.FoodEntryGetByUserAndDateAsync(userId, date, 0, ct))
             .ReturnsAsync(entries)
             .Verifiable(Times.Once());
 
         // Act
-        var result = await foodLogServiceMock.Object.GetDailySummaryAsync(userId, date, ct);
+        var result = await foodLogServiceMock.Object.GetDailySummaryAsync(userId, date, 0, ct);
 
         // Assert
         result.TotalCalories.Should().Be(650);
@@ -362,17 +362,17 @@ public class FoodLogServiceTests
         };
 
         foodLogServiceMock
-            .Setup(s => s.GetDailySummaryAsync(userId, date, ct))
+            .Setup(s => s.GetDailySummaryAsync(userId, date, 0, ct))
             .CallBase()
             .Verifiable(Times.Once());
 
         foodLogRepositoryMock
-            .Setup(r => r.FoodEntryGetByUserAndDateAsync(userId, date, ct))
+            .Setup(r => r.FoodEntryGetByUserAndDateAsync(userId, date, 0, ct))
             .ReturnsAsync(entries)
             .Verifiable(Times.Once());
 
         // Act
-        var result = await foodLogServiceMock.Object.GetDailySummaryAsync(userId, date, ct);
+        var result = await foodLogServiceMock.Object.GetDailySummaryAsync(userId, date, 0, ct);
 
         // Assert
         result.TotalCalories.Should().Be(0);

@@ -53,11 +53,11 @@ public class FoodLogRepository(IDbContextFactory<ApplicationDbContext> contextFa
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public virtual async Task<IReadOnlyList<FoodEntry>> FoodEntryGetByUserAndDateAsync(int userId, DateOnly date, CancellationToken cancellationToken)
+    public virtual async Task<IReadOnlyList<FoodEntry>> FoodEntryGetByUserAndDateAsync(int userId, DateOnly date, int timezoneOffsetMinutes, CancellationToken cancellationToken)
     {
         await using var dbContext = await CreateContextAsync(cancellationToken);
-        var start = date.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
-        var end = date.ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc);
+        var start = date.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc).AddMinutes(timezoneOffsetMinutes);
+        var end = date.ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc).AddMinutes(timezoneOffsetMinutes);
         var entities = await dbContext.FoodLog
             .AsNoTracking()
             .Where(e => e.UserId == userId && e.LoggedAt >= start && e.LoggedAt <= end)
