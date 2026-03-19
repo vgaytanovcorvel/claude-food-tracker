@@ -21,9 +21,11 @@ public class GeminiImagenServiceTests
     {
         options = Microsoft.Extensions.Options.Options.Create(new ImagenOptions
         {
-            ApiKey = "test-api-key",
             Model = "imagen-3.0-generate-002",
-            TimeoutSeconds = 5
+            TimeoutSeconds = 5,
+            ProjectId = "test-project",
+            Location = "us-central1",
+            ServiceAccountPath = ""
         });
         memoryCache = new MemoryCache(new MemoryCacheOptions());
     }
@@ -128,9 +130,11 @@ public class GeminiImagenServiceTests
         // Arrange
         var slowOptions = Microsoft.Extensions.Options.Options.Create(new ImagenOptions
         {
-            ApiKey = "test-key",
             Model = "imagen-3.0-generate-002",
-            TimeoutSeconds = 1
+            TimeoutSeconds = 1,
+            ProjectId = "test-project",
+            Location = "us-central1",
+            ServiceAccountPath = ""
         });
         var handler = new SlowFakeHttpMessageHandler(TimeSpan.FromSeconds(10));
         var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://generativelanguage.googleapis.com/") };

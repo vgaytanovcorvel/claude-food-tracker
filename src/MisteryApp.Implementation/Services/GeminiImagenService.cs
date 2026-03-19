@@ -1,5 +1,7 @@
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
+using Google.Apis.Auth.OAuth2;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using MisteryApp.Abstractions.Interfaces;
@@ -46,10 +48,19 @@ public class GeminiImagenService(
                 parameters = new { sampleCount = 1, aspectRatio = "1:1" }
             };
 
-            var response = await httpClient.PostAsJsonAsync(
-                $"v1beta/models/{options.Value.Model}:predict?key={options.Value.ApiKey}",
-                requestBody,
-                cts.Token);
+            var opts = options.Value;
+            var url = $"https://{opts.Location}-aiplatform.googleapis.com/v1/projects/{opts.ProjectId}/locations/{opts.Location}/publishers/google/models/{opts.Model}:predict";
+
+            using var request = new HttpRequestMessage(HttpMethod.Post, url);
+            request.Content = JsonContent.Create(requestBody);
+
+            if (!string.IsNullOrEmpty(opts.ServiceAccountPath))
+            {
+                var token = await GetBearerTokenAsync(opts.ServiceAccountPath);
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            }
+
+            var response = await httpClient.SendAsync(request, cts.Token);
 
             response.EnsureSuccessStatusCode();
 
@@ -78,6 +89,14 @@ public class GeminiImagenService(
 
         cache.Set(budgetKey, callCount + 1, TimeSpan.FromDays(1));
         return callResult;
+    }
+
+    private static async Task<string> GetBearerTokenAsync(string serviceAccountPath)
+    {
+        var credential = GoogleCredential
+            .FromFile(serviceAccountPath)
+            .CreateScoped("https://www.googleapis.com/auth/cloud-platform");
+        return await credential.UnderlyingCredential.GetAccessTokenForRequestAsync();
     }
 
     private sealed class ImagenApiResponse

@@ -22,8 +22,7 @@ public static class ImplementationServiceCollectionExtensions
         services.AddOptions<GeminiOptions>().BindConfiguration(GeminiOptions.Section);
         services.AddScoped<IFoodAnalysisService, VertexAIGeminiFoodAnalysisService>();
         services.AddOptions<ImagenOptions>().BindConfiguration(ImagenOptions.Section);
-        services.AddHttpClient<IAlternativeImageService, GeminiImagenService>(
-            client => client.BaseAddress = new Uri("https://generativelanguage.googleapis.com/"));
+        services.AddHttpClient<IAlternativeImageService, GeminiImagenService>();
 
         return services;
     }
