@@ -145,35 +145,50 @@ export default function FoodLoggingPage() {
 
         {/* Analysis phase */}
         {showAnalysisPhase && (
-          <>
+          <div className="space-y-5 pt-3">
             <p className="text-sm text-glass-muted">
               Saved: <span className="text-glass-text font-medium">{savedFoodName}</span>
             </p>
 
             {analysing && (
               <div className="space-y-3 animate-pulse" aria-label="Analysing meal">
-                <div className="h-24 bg-white/10 rounded-xl" />
+                <div className="h-24 bg-white/10 rounded-2xl" />
                 <p className="text-sm text-glass-muted text-center">Analysing your meal…</p>
               </div>
             )}
 
             {analysisResult && (
-              <div className={`rounded-xl p-5 space-y-3 ${
-                analysisResult.compatible
-                  ? 'bg-emerald-500/20 border border-emerald-400/30'
-                  : isHighSeverity
-                    ? 'bg-red-500/20 border border-red-400/30'
-                    : 'bg-amber-500/20 border border-amber-400/30'
-              }`}>
-                <div className="flex items-center gap-2 flex-wrap">
+              <div
+                className="rounded-2xl p-6 space-y-4"
+                style={{
+                  background: analysisResult.compatible
+                    ? 'rgba(16,185,129,0.06)'
+                    : isHighSeverity
+                      ? 'rgba(239,68,68,0.06)'
+                      : 'rgba(245,158,11,0.06)',
+                  border: analysisResult.compatible
+                    ? '1px solid rgba(52,211,153,0.35)'
+                    : isHighSeverity
+                      ? '1px solid rgba(239,68,68,0.45)'
+                      : '1px solid rgba(251,191,36,0.40)',
+                  boxShadow: analysisResult.compatible
+                    ? '0 0 28px rgba(16,185,129,0.08) inset'
+                    : isHighSeverity
+                      ? '0 0 28px rgba(239,68,68,0.10) inset'
+                      : '0 0 28px rgba(245,158,11,0.08) inset',
+                }}
+              >
+                {/* Status header */}
+                <div className="flex items-center gap-2.5 flex-wrap">
                   {analysisResult.compatible ? (
-                    <span className="text-emerald-300 font-semibold text-sm">✓ Great choice!</span>
+                    <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-300">
+                      <span className="w-4 h-4 rounded-full bg-emerald-400/20 flex items-center justify-center text-[10px]">✓</span>
+                      Great choice!
+                    </span>
                   ) : (
                     <>
-                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                        isHighSeverity
-                          ? 'bg-red-500/30 text-red-300'
-                          : 'bg-amber-500/30 text-amber-300'
+                      <span className={`text-xs font-bold px-2.5 py-1 rounded-full text-white ${
+                        isHighSeverity ? 'bg-red-500' : 'bg-amber-500'
                       }`}>
                         {analysisResult.severity}
                       </span>
@@ -183,41 +198,47 @@ export default function FoodLoggingPage() {
                 </div>
 
                 {analysisResult.educationText && (
-                  <p className="text-sm text-glass-muted leading-relaxed">{analysisResult.educationText}</p>
+                  <p className="leading-relaxed" style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.88)' }}>{analysisResult.educationText}</p>
                 )}
 
                 {analysisResult.alternativeFoodName && (
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <p className="text-sm text-glass-text">
-                      <span className="text-glass-muted">Try instead: </span>
-                      <span className="font-medium">{analysisResult.alternativeFoodName}</span>
-                    </p>
-                    {!bookmarkSaved && (
-                      <button
-                        onClick={async () => {
-                          if (!userId) return
-                          setBookmarkSaving(true)
-                          try {
-                            await createBookmark(
-                              parseInt(userId, 10),
-                              analysisResult.alternativeFoodName!,
-                              alternativeImage?.imageBase64 ?? null,
-                              alternativeImage?.mimeType ?? null
-                            )
-                            setBookmarkSaved(true)
-                          } finally {
-                            setBookmarkSaving(false)
-                          }
-                        }}
-                        disabled={bookmarkSaving || loadingImage}
-                        className="text-xs text-brand-400 hover:underline disabled:opacity-50"
+                  <div className="space-y-2">
+                    <p className="text-xs text-glass-muted uppercase tracking-widest" style={{ fontSize: '10px' }}>Try instead</p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span
+                        className="font-semibold"
+                        style={{ fontSize: '0.95rem', color: 'rgba(56,189,248,0.95)', letterSpacing: '0.01em' }}
                       >
-                        {bookmarkSaving ? 'Saving…' : 'Save for later'}
-                      </button>
-                    )}
-                    {bookmarkSaved && (
-                      <span className="text-xs text-emerald-400">Saved</span>
-                    )}
+                        {analysisResult.alternativeFoodName}
+                      </span>
+                      {!bookmarkSaved && (
+                        <button
+                          onClick={async () => {
+                            if (!userId) return
+                            setBookmarkSaving(true)
+                            try {
+                              await createBookmark(
+                                parseInt(userId, 10),
+                                analysisResult.alternativeFoodName!,
+                                alternativeImage?.imageBase64 ?? null,
+                                alternativeImage?.mimeType ?? null
+                              )
+                              setBookmarkSaved(true)
+                            } finally {
+                              setBookmarkSaving(false)
+                            }
+                          }}
+                          disabled={bookmarkSaving || loadingImage}
+                          className="btn-ghost text-xs px-3 py-1.5 disabled:opacity-50"
+                          style={{ border: '1px solid rgba(255,255,255,0.2)' }}
+                        >
+                          {bookmarkSaving ? 'Saving…' : 'Save for later'}
+                        </button>
+                      )}
+                      {bookmarkSaved && (
+                        <span className="text-xs text-emerald-400 font-medium">✓ Saved</span>
+                      )}
+                    </div>
                   </div>
                 )}
 
@@ -239,13 +260,13 @@ export default function FoodLoggingPage() {
 
                 <button
                   onClick={() => navigate('/')}
-                  className="btn-ghost w-full py-2.5"
+                  className="btn-primary w-full py-3"
                 >
                   Done
                 </button>
               </div>
             )}
-          </>
+          </div>
         )}
 
         {/* Entry form — hidden during analysis phase */}

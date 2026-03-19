@@ -102,6 +102,13 @@ export default function ProfilePage() {
           </button>
 
           <button
+            onClick={() => { clearIdentity(); navigate('/onboarding') }}
+            className="w-full rounded-xl border border-white/10 px-6 py-3 font-medium text-glass-muted text-sm transition-colors hover:bg-white/8 hover:text-glass-text"
+          >
+            Log out
+          </button>
+
+          <button
             onClick={handleDeleteAccount}
             className="w-full rounded-xl border border-red-400/40 px-6 py-3 font-medium text-red-400/80 text-sm transition-colors hover:bg-red-400/10 hover:text-red-400"
           >
