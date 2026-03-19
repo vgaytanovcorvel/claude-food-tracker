@@ -58,3 +58,4 @@ misteryapp.web.client/dist/
 .claude/projects/
 .claude/skills/.claude/
 .claude/skills/.playwright-mcp/
+.claude/skills/*.png
