@@ -11,6 +11,7 @@ public class FoodLogService(
     IUserProfileRepository userProfileRepository,
     IFoodAnalysisService foodAnalysisService,
     IAlternativeImageService alternativeImageService,
+    ISuggestAlternativeService suggestAlternativeService,
     TimeProvider timeProvider) : IFoodLogService
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -89,4 +90,16 @@ public class FoodLogService(
             : $"{onGoalCount} of {analysedCount} meals on goal";
         return new DailyLogSummary(date, totalCalories, onGoalCount, conflictCount, complianceLabel);
     }
+
+    public virtual async Task<AlternativeSuggestion> SuggestAlternativeForEntryAsync(
+        int entryId, IReadOnlyList<string> excludedNames, CancellationToken cancellationToken)
+    {
+        var entry = await foodLogRepository.FoodEntrySingleByIdAsync(entryId, cancellationToken);
+        var userProfile = await userProfileRepository.UserProfileSingleByIdAsync(entry.UserId, cancellationToken);
+        return await suggestAlternativeService.SuggestAsync(entry.FoodName, userProfile.DietStyle, excludedNames, cancellationToken);
+    }
+
+    public virtual Task<AlternativeImageResult> GetImageForFoodNameAsync(
+        string foodName, int userId, CancellationToken cancellationToken) =>
+        alternativeImageService.GenerateAlternativeImageAsync(foodName, userId, cancellationToken);
 }

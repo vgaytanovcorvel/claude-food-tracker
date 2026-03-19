@@ -132,23 +132,59 @@ export interface AlternativeImageResult {
   mimeType: string | null
 }
 
+export interface AlternativeSuggestion {
+  foodName: string
+}
+
+export async function suggestAlternative(
+  entryId: number,
+  excludedNames: string[],
+  signal?: AbortSignal
+): Promise<AlternativeSuggestion | null> {
+  try {
+    const res = await fetch(`/api/food-entries/${entryId}/suggest-alternative`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ excludedNames }),
+      signal,
+    })
+    if (!res.ok) return null
+    const json: ApiResponse<AlternativeSuggestion> = await res.json()
+    if (!json.success || !json.data) return null
+    return json.data
+  } catch {
+    return null
+  }
+}
+
+export async function getImageForFoodName(
+  foodName: string,
+  userId: number,
+  signal?: AbortSignal
+): Promise<AlternativeImageResult | null> {
+  try {
+    const res = await fetch(
+      `/api/food-entries/suggest-image?foodName=${encodeURIComponent(foodName)}&userId=${userId}`,
+      { signal }
+    )
+    if (!res.ok) return null
+    const json: ApiResponse<AlternativeImageResult> = await res.json()
+    if (!json.success || !json.data) return null
+    return json.data
+  } catch {
+    return null
+  }
+}
+
 export async function getAlternativeImage(
   entryId: number,
   signal?: AbortSignal
 ): Promise<AlternativeImageResult | null> {
-  const cacheKey = `altimg:${entryId}`
-  const cached = sessionStorage.getItem(cacheKey)
-  if (cached) {
-    try { return JSON.parse(cached) } catch { /* ignore */ }
-  }
   try {
     const res = await fetch(`/api/food-entries/${entryId}/alternative-image`, { signal })
     if (!res.ok) return null
     const json: ApiResponse<AlternativeImageResult> = await res.json()
     if (!json.success || !json.data) return null
-    if (json.data.imageBase64 !== null) {
-      sessionStorage.setItem(cacheKey, JSON.stringify(json.data))
-    }
     return json.data
   } catch {
     return null

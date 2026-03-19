@@ -21,6 +21,7 @@ public static class ImplementationServiceCollectionExtensions
         services.AddScoped<IVisionFoodIdentificationService, VertexAIVisionFoodIdentificationService>();
         services.AddOptions<GeminiOptions>().BindConfiguration(GeminiOptions.Section);
         services.AddScoped<IFoodAnalysisService, VertexAIGeminiFoodAnalysisService>();
+        services.AddScoped<ISuggestAlternativeService, VertexAISuggestAlternativeService>();
         services.AddOptions<ImagenOptions>().BindConfiguration(ImagenOptions.Section);
         services.AddHttpClient<IAlternativeImageService, GeminiImagenService>();
 

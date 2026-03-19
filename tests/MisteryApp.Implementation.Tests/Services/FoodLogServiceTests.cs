@@ -18,6 +18,7 @@ public class FoodLogServiceTests
     private Mock<IUserProfileRepository> userProfileRepositoryMock = new(MockBehavior.Strict);
     private Mock<IFoodAnalysisService> foodAnalysisServiceMock = new(MockBehavior.Strict);
     private Mock<IAlternativeImageService> alternativeImageServiceMock = new(MockBehavior.Strict);
+    private Mock<ISuggestAlternativeService> suggestAlternativeServiceMock = new(MockBehavior.Strict);
     private FakeTimeProvider timeProvider = null!;
     private Mock<FoodLogService> foodLogServiceMock = null!;
 
@@ -33,6 +34,7 @@ public class FoodLogServiceTests
                 userProfileRepositoryMock.Object,
                 foodAnalysisServiceMock.Object,
                 alternativeImageServiceMock.Object,
+                suggestAlternativeServiceMock.Object,
                 timeProvider),
             MockBehavior.Strict);
     }
@@ -97,6 +99,7 @@ public class FoodLogServiceTests
         foodLogRepositoryMock.VerifyAll();
         foodAnalysisServiceMock.VerifyAll();
         alternativeImageServiceMock.VerifyAll();
+        suggestAlternativeServiceMock.VerifyAll();
     }
 
     [TestMethod]
@@ -127,6 +130,7 @@ public class FoodLogServiceTests
         foodLogRepositoryMock.VerifyAll();
         foodAnalysisServiceMock.VerifyAll();
         alternativeImageServiceMock.VerifyAll();
+        suggestAlternativeServiceMock.VerifyAll();
     }
 
     [TestMethod]
@@ -161,6 +165,7 @@ public class FoodLogServiceTests
         userProfileRepositoryMock.VerifyAll();
         foodAnalysisServiceMock.VerifyAll();
         alternativeImageServiceMock.VerifyAll();
+        suggestAlternativeServiceMock.VerifyAll();
     }
 
     [TestMethod]
@@ -191,6 +196,7 @@ public class FoodLogServiceTests
         userProfileRepositoryMock.VerifyAll();
         foodAnalysisServiceMock.VerifyAll();
         alternativeImageServiceMock.VerifyAll();
+        suggestAlternativeServiceMock.VerifyAll();
     }
 
     [TestMethod]
@@ -241,6 +247,7 @@ public class FoodLogServiceTests
         userProfileRepositoryMock.VerifyAll();
         foodAnalysisServiceMock.VerifyAll();
         alternativeImageServiceMock.VerifyAll();
+        suggestAlternativeServiceMock.VerifyAll();
     }
 
     [TestMethod]
@@ -270,6 +277,7 @@ public class FoodLogServiceTests
         userProfileRepositoryMock.VerifyAll();
         foodAnalysisServiceMock.VerifyAll();
         alternativeImageServiceMock.VerifyAll();
+        suggestAlternativeServiceMock.VerifyAll();
     }
 
     [TestMethod]
@@ -306,6 +314,7 @@ public class FoodLogServiceTests
         userProfileRepositoryMock.VerifyAll();
         foodAnalysisServiceMock.VerifyAll();
         alternativeImageServiceMock.VerifyAll();
+        suggestAlternativeServiceMock.VerifyAll();
     }
 
     [TestMethod]
@@ -347,6 +356,7 @@ public class FoodLogServiceTests
         userProfileRepositoryMock.VerifyAll();
         foodAnalysisServiceMock.VerifyAll();
         alternativeImageServiceMock.VerifyAll();
+        suggestAlternativeServiceMock.VerifyAll();
     }
 
     [TestMethod]
@@ -384,6 +394,7 @@ public class FoodLogServiceTests
         userProfileRepositoryMock.VerifyAll();
         foodAnalysisServiceMock.VerifyAll();
         alternativeImageServiceMock.VerifyAll();
+        suggestAlternativeServiceMock.VerifyAll();
     }
 
     [TestMethod]
@@ -423,6 +434,7 @@ public class FoodLogServiceTests
         userProfileRepositoryMock.VerifyAll();
         foodAnalysisServiceMock.VerifyAll();
         alternativeImageServiceMock.VerifyAll();
+        suggestAlternativeServiceMock.VerifyAll();
     }
 
     [TestMethod]
@@ -454,6 +466,7 @@ public class FoodLogServiceTests
         userProfileRepositoryMock.VerifyAll();
         foodAnalysisServiceMock.VerifyAll();
         alternativeImageServiceMock.VerifyAll();
+        suggestAlternativeServiceMock.VerifyAll();
     }
 
     [TestMethod]
@@ -483,5 +496,6 @@ public class FoodLogServiceTests
         userProfileRepositoryMock.VerifyAll();
         foodAnalysisServiceMock.VerifyAll();
         alternativeImageServiceMock.VerifyAll();
+        suggestAlternativeServiceMock.VerifyAll();
     }
 }

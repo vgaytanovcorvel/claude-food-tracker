@@ -6,6 +6,8 @@ import {
   identifyFood,
   analyseEntry,
   getAlternativeImage,
+  getImageForFoodName,
+  suggestAlternative,
   type FoodEntrySource,
   type FoodAnalysisResult,
   type AlternativeImageResult,
@@ -19,11 +21,13 @@ export default function FoodLoggingPage() {
   const identifyAbortRef = useRef<AbortController | null>(null)
   const analyseAbortRef = useRef<AbortController | null>(null)
   const imageAbortRef = useRef<AbortController | null>(null)
+  const suggestAbortRef = useRef<AbortController | null>(null)
 
   useEffect(() => () => {
     identifyAbortRef.current?.abort()
     analyseAbortRef.current?.abort()
     imageAbortRef.current?.abort()
+    suggestAbortRef.current?.abort()
   }, [])
 
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
@@ -41,6 +45,10 @@ export default function FoodLoggingPage() {
   const [loadingImage, setLoadingImage] = useState(false)
   const [bookmarkSaved, setBookmarkSaved] = useState(false)
   const [bookmarkSaving, setBookmarkSaving] = useState(false)
+  const [currentAlternativeName, setCurrentAlternativeName] = useState<string | null>(null)
+  const [shownAlternatives, setShownAlternatives] = useState<string[]>([])
+  const [suggestClickCount, setSuggestClickCount] = useState(0)
+  const [suggestingAlternative, setSuggestingAlternative] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -111,6 +119,9 @@ export default function FoodLoggingPage() {
       if (result) {
         setAnalysisResult(result)
         if (!result.compatible && result.alternativeFoodName) {
+          setCurrentAlternativeName(result.alternativeFoodName)
+          setShownAlternatives([result.alternativeFoodName])
+          setSuggestClickCount(0)
           imageAbortRef.current?.abort()
           const imgController = new AbortController()
           imageAbortRef.current = imgController
@@ -132,6 +143,42 @@ export default function FoodLoggingPage() {
     } catch (err) {
       setSaving(false)
       setError(err instanceof Error ? err.message : 'Failed to save entry.')
+    }
+  }
+
+  async function handleSuggestAnother() {
+    if (!savedEntryId || !userId) return
+    suggestAbortRef.current?.abort()
+    const controller = new AbortController()
+    suggestAbortRef.current = controller
+    setSuggestingAlternative(true)
+    setBookmarkSaved(false)
+    try {
+      const suggestion = await suggestAlternative(savedEntryId, shownAlternatives, controller.signal)
+      if (controller.signal.aborted || !suggestion?.foodName) return
+      const newName = suggestion.foodName
+      setCurrentAlternativeName(newName)
+      setShownAlternatives(prev => [...prev, newName])
+      setSuggestClickCount(prev => prev + 1)
+      setAlternativeImage(null)
+      setLoadingImage(true)
+      imageAbortRef.current?.abort()
+      const imgController = new AbortController()
+      imageAbortRef.current = imgController
+      getImageForFoodName(newName, parseInt(userId, 10), imgController.signal)
+        .then(img => {
+          if (!imgController.signal.aborted) {
+            setAlternativeImage(img)
+            setLoadingImage(false)
+          }
+        })
+        .catch(() => {
+          if (!imgController.signal.aborted) setLoadingImage(false)
+        })
+    } catch {
+      // silent fallback — keep showing existing alternative
+    } finally {
+      if (!controller.signal.aborted) setSuggestingAlternative(false)
     }
   }
 
@@ -201,7 +248,7 @@ export default function FoodLoggingPage() {
                   <p className="leading-relaxed" style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.88)' }}>{analysisResult.educationText}</p>
                 )}
 
-                {analysisResult.alternativeFoodName && (
+                {currentAlternativeName && (
                   <div className="space-y-2">
                     <p className="text-xs text-glass-muted uppercase tracking-widest" style={{ fontSize: '10px' }}>Try instead</p>
                     <div className="flex items-center gap-2 flex-wrap">
@@ -209,7 +256,7 @@ export default function FoodLoggingPage() {
                         className="font-semibold"
                         style={{ fontSize: '0.95rem', color: 'rgba(56,189,248,0.95)', letterSpacing: '0.01em' }}
                       >
-                        {analysisResult.alternativeFoodName}
+                        {currentAlternativeName}
                       </span>
                       {!bookmarkSaved && (
                         <button
@@ -219,7 +266,7 @@ export default function FoodLoggingPage() {
                             try {
                               await createBookmark(
                                 parseInt(userId, 10),
-                                analysisResult.alternativeFoodName!,
+                                currentAlternativeName,
                                 alternativeImage?.imageBase64 ?? null,
                                 alternativeImage?.mimeType ?? null
                               )
@@ -256,6 +303,17 @@ export default function FoodLoggingPage() {
                       />
                     )}
                   </>
+                )}
+
+                {!analysisResult.compatible && suggestClickCount < 3 && (
+                  <button
+                    onClick={handleSuggestAnother}
+                    disabled={suggestingAlternative || loadingImage}
+                    className="btn-ghost w-full py-2.5 text-sm disabled:opacity-50"
+                    style={{ border: '1px solid rgba(255,255,255,0.15)' }}
+                  >
+                    {suggestingAlternative ? 'Finding another option…' : `Suggest another${suggestClickCount > 0 ? ` (${3 - suggestClickCount} left)` : ''}`}
+                  </button>
                 )}
 
                 <button
