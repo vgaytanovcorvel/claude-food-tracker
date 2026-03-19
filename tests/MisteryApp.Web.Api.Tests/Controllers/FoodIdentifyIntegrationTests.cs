@@ -2,6 +2,8 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -18,6 +20,11 @@ namespace MisteryApp.Web.Api.Tests.Controllers;
 public class FoodIdentifyIntegrationTests
 {
     private static readonly FoodIdentificationResult FakeResult = new("Chicken Breast", 300, 0.92);
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        Converters = { new JsonStringEnumConverter() }
+    };
 
     private WebApplicationFactory<Program> factory = null!;
     private HttpClient client = null!;
@@ -79,7 +86,7 @@ public class FoodIdentifyIntegrationTests
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var body = await response.Content.ReadFromJsonAsync<ApiResponse<FoodIdentificationResult>>();
+        var body = await response.Content.ReadFromJsonAsync<ApiResponse<FoodIdentificationResult>>(JsonOptions);
         body!.Success.Should().BeTrue();
         body.Data!.FoodName.Should().Be("Chicken Breast");
         body.Data.EstimatedCalories.Should().Be(300);
@@ -113,10 +120,27 @@ public class FoodIdentifyIntegrationTests
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var body = await response.Content.ReadFromJsonAsync<ApiResponse<FoodIdentificationResult>>();
+        var body = await response.Content.ReadFromJsonAsync<ApiResponse<FoodIdentificationResult>>(JsonOptions);
         body!.Success.Should().BeTrue();
         body.Data!.FoodName.Should().BeEmpty();
         body.Data.EstimatedCalories.Should().Be(0);
+    }
+
+    [TestMethod]
+    public async Task PostIdentify_ShouldReturn400_WhenImageExceeds10Mb()
+    {
+        // Arrange — 10 MB + 1 byte
+        var oversizedBytes = new byte[10 * 1024 * 1024 + 1];
+        using var content = BuildImageContent(oversizedBytes);
+
+        // Act
+        var response = await client.PostAsync("/api/food-entries/identify", content);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var body = await response.Content.ReadFromJsonAsync<ApiResponse<FoodIdentificationResult>>(JsonOptions);
+        body!.Success.Should().BeFalse();
+        body.Error.Should().Contain("10 MB");
     }
 
     [TestMethod]
