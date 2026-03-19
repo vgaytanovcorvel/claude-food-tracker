@@ -75,6 +75,9 @@ export default function FoodLoggingPage() {
   const [previewedFoodName, setPreviewedFoodName] = useState('')
   const [previewLoading, setPreviewLoading] = useState(false)
 
+  // Image zoom lightbox
+  const [zoomedImageUrl, setZoomedImageUrl] = useState<string | null>(null)
+
   // Pre-save alternative image
   const [preSaveImage, setPreSaveImage] = useState<AlternativeImageResult | null>(null)
   const [preSaveImageLoading, setPreSaveImageLoading] = useState(false)
@@ -488,7 +491,8 @@ export default function FoodLoggingPage() {
                           <img
                             src={`data:${alternativeImage.mimeType ?? 'image/png'};base64,${alternativeImage.imageBase64}`}
                             alt={`Suggested: ${currentAlternativeName}`}
-                            className="w-20 h-20 rounded-lg object-cover shrink-0"
+                            className="w-20 h-20 rounded-lg object-cover shrink-0 cursor-pointer"
+                            onClick={() => setZoomedImageUrl(`data:${alternativeImage.mimeType ?? 'image/png'};base64,${alternativeImage.imageBase64}`)}
                           />
                         )}
                         <div className="flex flex-col gap-1 min-w-0">
@@ -562,7 +566,7 @@ export default function FoodLoggingPage() {
               {/* Local preview — max 180px */}
               {previewUrl && (
                 <div className="relative rounded-xl overflow-hidden">
-                  <img src={previewUrl} alt="Food preview" style={{ maxHeight: '180px', width: '100%', objectFit: 'cover' }} />
+                  <img src={previewUrl} alt="Food preview" style={{ maxHeight: '180px', width: '100%', objectFit: 'cover', cursor: 'pointer' }} onClick={() => setZoomedImageUrl(previewUrl)} />
                   <button
                     onClick={handleRemovePhoto}
                     className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-lg hover:bg-black/80 transition"
@@ -688,7 +692,8 @@ export default function FoodLoggingPage() {
                               <img
                                 src={`data:${preSaveImage.mimeType ?? 'image/png'};base64,${preSaveImage.imageBase64}`}
                                 alt={`Suggested: ${preSaveCurrentAlternativeName ?? previewResult!.alternativeFoodName}`}
-                                className="w-20 h-20 rounded-lg object-cover shrink-0"
+                                className="w-20 h-20 rounded-lg object-cover shrink-0 cursor-pointer"
+                                onClick={() => setZoomedImageUrl(`data:${preSaveImage.mimeType ?? 'image/png'};base64,${preSaveImage.imageBase64}`)}
                               />
                             )}
                             <div className="flex flex-col gap-1 min-w-0">
@@ -722,7 +727,7 @@ export default function FoodLoggingPage() {
                           </div>
                         )}
 
-                        {preSaveSuggestClickCount < 3 && (
+                        {!previewResult!.compatible && preSaveSuggestClickCount < 3 && (
                           <button
                             onClick={handlePreSaveSuggestAnother}
                             disabled={preSaveSuggestingAlternative}
@@ -769,6 +774,20 @@ export default function FoodLoggingPage() {
           )}
         </div>
       </div>
+
+      {zoomedImageUrl && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{ background: 'rgba(0,0,0,0.88)' }}
+          onClick={() => setZoomedImageUrl(null)}
+        >
+          <img
+            src={zoomedImageUrl}
+            alt="Alternative food"
+            className="max-w-[88vw] max-h-[80vh] rounded-2xl object-contain"
+          />
+        </div>
+      )}
     </div>
   )
 }
