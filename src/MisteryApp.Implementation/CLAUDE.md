@@ -8,7 +8,6 @@ Business logic layer — concrete implementations of the service interfaces decl
 @../../rules/common/logging.md
 @../../rules/common/patterns.md
 @../../rules/csharp/coding-style.md
-@../../rules/csharp/domain.md
 @../../rules/csharp/services.md
 
 ## Module Purpose

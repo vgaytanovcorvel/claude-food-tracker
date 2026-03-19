@@ -31,7 +31,7 @@ dotnet ef database update --project src/MisteryApp.Repository
 # Run the API
 dotnet run --project src/MisteryApp.Web.Api
 
-# Run the web server (with Angular SPA)
+# Run the web server (with React SPA)
 dotnet run --project src/MisteryApp.Web.Server
 
 # Run the CLI
@@ -51,7 +51,8 @@ src/
 ├── MisteryApp.Web.Core/        ← Controllers, filters, middleware (depends on Implementation)
 ├── MisteryApp.Web.Api/         ← API host, Program.cs, Swagger (depends on Web.Core + Repository)
 ├── MisteryApp.Web.Server/      ← SPA host (optional, depends on Web.Core + Repository)
-└── MisteryApp.Cli/             ← CLI host, System.CommandLine 2.0.5 with manual DI (depends on all)
+├── MisteryApp.Cli/             ← CLI host, System.CommandLine 2.0.5 with manual DI (depends on all)
+└── misteryapp.web.client/      ← React 18 + Vite + Tailwind SPA (communicates via /api/*)
 
 tests/
 ├── MisteryApp.Implementation.Tests/

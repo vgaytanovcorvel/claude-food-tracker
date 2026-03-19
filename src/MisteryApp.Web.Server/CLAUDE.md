@@ -1,12 +1,11 @@
 # MisteryApp.Web.Server
 
-SPA hosting project — serves the API alongside static Angular files, with a fallback to `index.html` for client-side routing.
+SPA hosting project — serves the API alongside static React files, with a fallback to `index.html` for client-side routing.
 
 ## Rules
 
 @../../rules/common/coding-style.md
 @../../rules/common/logging.md
-@../../rules/common/patterns.md
 @../../rules/common/security.md
 @../../rules/csharp/coding-style.md
 @../../rules/csharp/persistence.md
