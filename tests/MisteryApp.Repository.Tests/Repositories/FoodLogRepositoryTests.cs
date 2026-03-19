@@ -183,4 +183,33 @@ public class FoodLogRepositoryTests
         // Assert
         result.Should().BeEmpty();
     }
+
+    [TestMethod]
+    public async Task FoodEntryPatchAnalysisAsync_ShouldUpdateField_WhenEntryExists()
+    {
+        // Arrange
+        var repo = new FoodLogRepository(contextFactory);
+        var entry = await repo.FoodEntryAddAsync(
+            new FoodEntry { UserId = seededUserId, FoodName = "Pasta", EstimatedCalories = 300, Source = FoodEntrySource.Manual, LoggedAt = DateTime.UtcNow },
+            CancellationToken.None);
+        const string json = """{"compatible":true,"severity":"None"}""";
+
+        // Act
+        await repo.FoodEntryPatchAnalysisAsync(entry.Id, json, CancellationToken.None);
+
+        // Assert
+        var retrieved = await repo.FoodEntrySingleByIdAsync(entry.Id, CancellationToken.None);
+        retrieved.AnalysisResult.Should().Be(json);
+    }
+
+    [TestMethod]
+    public async Task FoodEntryPatchAnalysisAsync_ShouldThrowNotFoundException_WhenEntryMissing()
+    {
+        // Arrange
+        var repo = new FoodLogRepository(contextFactory);
+
+        // Act & Assert
+        await Assert.ThrowsExceptionAsync<NotFoundException>(
+            () => repo.FoodEntryPatchAnalysisAsync(9999, "{}", CancellationToken.None));
+    }
 }

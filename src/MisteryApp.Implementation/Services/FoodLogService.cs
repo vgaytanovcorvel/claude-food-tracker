@@ -16,6 +16,7 @@ public class FoodLogService(
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
+        PropertyNameCaseInsensitive = true,
         Converters = { new JsonStringEnumConverter() }
     };
 
@@ -102,4 +103,10 @@ public class FoodLogService(
     public virtual Task<AlternativeImageResult> GetImageForFoodNameAsync(
         string foodName, int userId, CancellationToken cancellationToken) =>
         alternativeImageService.GenerateAlternativeImageAsync(foodName, userId, cancellationToken);
+
+    public virtual async Task PatchFoodEntryAnalysisAsync(
+        int entryId, string analysisResultJson, CancellationToken cancellationToken)
+    {
+        await foodLogRepository.FoodEntryPatchAnalysisAsync(entryId, analysisResultJson, cancellationToken);
+    }
 }

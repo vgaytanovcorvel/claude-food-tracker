@@ -1,4 +1,5 @@
 using FluentValidation;
+using Microsoft.Extensions.Options;
 using MisteryApp.Abstractions.Interfaces;
 using MisteryApp.Implementation.Options;
 using MisteryApp.Implementation.Services;
@@ -24,6 +25,7 @@ public static class ImplementationServiceCollectionExtensions
         services.AddScoped<ISuggestAlternativeService, VertexAISuggestAlternativeService>();
         services.AddOptions<ImagenOptions>().BindConfiguration(ImagenOptions.Section);
         services.AddHttpClient<IAlternativeImageService, GeminiImagenService>();
+        services.AddScoped<IFoodAnalysisPreviewService, VertexAIGeminiFoodAnalysisPreviewService>();
 
         return services;
     }

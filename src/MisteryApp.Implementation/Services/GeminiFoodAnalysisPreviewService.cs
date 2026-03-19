@@ -10,20 +10,23 @@ using MisteryApp.Implementation.Options;
 
 namespace MisteryApp.Implementation.Services;
 
-public class GeminiFoodAnalysisService(
+public class GeminiFoodAnalysisPreviewService(
     HttpClient httpClient,
-    IOptions<GeminiOptions> options) : IFoodAnalysisService
+    IOptions<GeminiOptions> options,
+    IUserProfileRepository userProfileRepository) : IFoodAnalysisPreviewService
 {
-    private static readonly FoodAnalysisResult GracefulFallback =
-        new(true, AnalysisSeverity.None, string.Empty, null);
+    private static readonly AnalysisPreviewResult GracefulFallback =
+        new(true, AnalysisSeverity.None, null, null, 0);
 
     private static readonly Regex JsonExtractRegex =
         new(@"\{[\s\S]*?\}", RegexOptions.Compiled);
 
-    public virtual async Task<FoodAnalysisResult> AnalyseFoodAsync(
-        string foodName, DietStyle dietStyle, CancellationToken cancellationToken)
+    public virtual async Task<AnalysisPreviewResult> AnalysePreviewAsync(
+        string foodName, int userId, CancellationToken cancellationToken)
     {
-        var prompt = BuildPrompt(foodName, dietStyle);
+        var userProfile = await userProfileRepository.UserProfileSingleByIdAsync(userId, cancellationToken);
+        var prompt = BuildPrompt(foodName, userProfile.DietStyle);
+
         try
         {
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -51,7 +54,7 @@ public class GeminiFoodAnalysisService(
                            ?.Content?.Parts?.FirstOrDefault()?.Text
                        ?? string.Empty;
 
-            return ParseAnalysisResponse(text);
+            return ParsePreviewResponse(text);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -85,23 +88,23 @@ public class GeminiFoodAnalysisService(
                 """;
     }
 
-    private static FoodAnalysisResult ParseAnalysisResponse(string text)
+    private static AnalysisPreviewResult ParsePreviewResponse(string text)
     {
         var match = JsonExtractRegex.Match(text);
         if (!match.Success) return GracefulFallback;
 
         try
         {
-            var parsed = JsonSerializer.Deserialize<GeminiAnalysisResponse>(match.Value);
+            var parsed = JsonSerializer.Deserialize<GeminiPreviewResponse>(match.Value);
             if (parsed is null) return GracefulFallback;
 
             var severity = Enum.TryParse<AnalysisSeverity>(parsed.Severity, ignoreCase: true, out var s)
                 ? s : AnalysisSeverity.None;
 
-            return new FoodAnalysisResult(
+            return new AnalysisPreviewResult(
                 parsed.Compatible,
                 severity,
-                parsed.EducationText ?? string.Empty,
+                parsed.EducationText,
                 parsed.AlternativeFoodName,
                 parsed.EstimatedCalories);
         }
@@ -135,7 +138,7 @@ public class GeminiFoodAnalysisService(
         public string? Text { get; set; }
     }
 
-    private sealed class GeminiAnalysisResponse
+    private sealed class GeminiPreviewResponse
     {
         [JsonPropertyName("compatible")]
         public bool Compatible { get; set; }

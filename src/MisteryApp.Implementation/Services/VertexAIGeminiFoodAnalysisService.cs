@@ -92,7 +92,7 @@ public class VertexAIGeminiFoodAnalysisService : IFoodAnalysisService
                 You are a concise dietary assistant. Evaluate whether "{{foodName}}" conflicts with the {{dietStyle}} diet.
                 {{dietGuide}}
                 Respond ONLY with a valid JSON object, no markdown fences, no explanation:
-                {"compatible": true or false, "severity": "None"|"Low"|"Medium"|"High", "educationText": "1-2 sentence nutritional note, no medical claims.", "alternativeFoodName": "specific food or null"}
+                {"compatible": true or false, "severity": "None"|"Low"|"Medium"|"High", "educationText": "1-2 sentence nutritional note, no medical claims.", "alternativeFoodName": "specific food or null", "estimatedCalories": integer calorie estimate for a typical serving of this food}
                 Rules: compatible=true must have severity="None" and alternativeFoodName=null. compatible=false must have severity Low/Medium/High and a specific alternativeFoodName.
                 """;
     }
@@ -114,7 +114,8 @@ public class VertexAIGeminiFoodAnalysisService : IFoodAnalysisService
                 parsed.Compatible,
                 severity,
                 parsed.EducationText ?? string.Empty,
-                parsed.AlternativeFoodName);
+                parsed.AlternativeFoodName,
+                parsed.EstimatedCalories);
         }
         catch
         {
@@ -128,5 +129,6 @@ public class VertexAIGeminiFoodAnalysisService : IFoodAnalysisService
         [JsonPropertyName("severity")] public string? Severity { get; set; }
         [JsonPropertyName("educationText")] public string? EducationText { get; set; }
         [JsonPropertyName("alternativeFoodName")] public string? AlternativeFoodName { get; set; }
+        [JsonPropertyName("estimatedCalories")] public int EstimatedCalories { get; set; }
     }
 }

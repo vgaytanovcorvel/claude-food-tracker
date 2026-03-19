@@ -9,6 +9,7 @@ public interface IFoodLogRepository
     Task<FoodEntry> FoodEntryAddAsync(FoodEntry entry, CancellationToken cancellationToken);
     Task FoodEntryDeleteAsync(int id, CancellationToken cancellationToken);
     Task FoodEntryUpdateAnalysisAsync(int id, string analysisJson, CancellationToken cancellationToken);
+    Task FoodEntryPatchAnalysisAsync(int id, string analysisJson, CancellationToken cancellationToken);
     Task<IReadOnlyList<FoodEntry>> FoodEntryGetByUserAndDateAsync(int userId, DateOnly date, int timezoneOffsetMinutes, CancellationToken cancellationToken);
     Task<IReadOnlyList<FoodEntry>> FoodEntryGetByUserAndDateRangeAsync(int userId, DateOnly startDate, DateOnly endDate, CancellationToken cancellationToken);
 }

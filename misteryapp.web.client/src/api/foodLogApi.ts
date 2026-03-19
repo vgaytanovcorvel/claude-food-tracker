@@ -23,6 +23,15 @@ export interface FoodAnalysisResult {
   severity: 'None' | 'Low' | 'Medium' | 'High'
   educationText: string
   alternativeFoodName: string | null
+  estimatedCalories: number
+}
+
+export interface AnalysisPreviewResult {
+  compatible: boolean
+  severity: 'None' | 'Low' | 'Medium' | 'High'
+  educationText: string | null
+  alternativeFoodName: string | null
+  estimatedCalories: number
 }
 
 export async function identifyFood(
@@ -173,6 +182,44 @@ export async function getImageForFoodName(
     return json.data
   } catch {
     return null
+  }
+}
+
+export async function analysePreview(
+  foodName: string,
+  userId: number,
+  signal?: AbortSignal
+): Promise<AnalysisPreviewResult | null> {
+  try {
+    const res = await fetch('/api/food-entries/analyse-preview', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ foodName, userId }),
+      signal,
+    })
+    if (!res.ok) return null
+    const json: ApiResponse<AnalysisPreviewResult> = await res.json()
+    if (!json.success || !json.data) return null
+    return json.data
+  } catch {
+    return null
+  }
+}
+
+export async function patchAnalysis(
+  entryId: number,
+  analysisResultJson: string,
+  signal?: AbortSignal
+): Promise<void> {
+  try {
+    await fetch(`/api/food-entries/${entryId}/analysis`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ analysisResultJson }),
+      signal,
+    })
+  } catch {
+    // silent — post-save state already set from preview
   }
 }
 

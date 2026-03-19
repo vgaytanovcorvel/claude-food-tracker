@@ -498,4 +498,65 @@ public class FoodLogServiceTests
         alternativeImageServiceMock.VerifyAll();
         suggestAlternativeServiceMock.VerifyAll();
     }
+
+    [TestMethod]
+    public async Task PatchFoodEntryAnalysisAsync_ShouldCallRepository_WhenEntryExists()
+    {
+        // Arrange
+        var entryId = 1;
+        const string json = """{"compatible":true,"severity":"None"}""";
+        var ct = CancellationToken.None;
+
+        foodLogServiceMock
+            .Setup(s => s.PatchFoodEntryAnalysisAsync(entryId, json, ct))
+            .CallBase()
+            .Verifiable(Times.Once());
+
+        foodLogRepositoryMock
+            .Setup(r => r.FoodEntryPatchAnalysisAsync(entryId, json, ct))
+            .Returns(Task.CompletedTask)
+            .Verifiable(Times.Once());
+
+        // Act
+        await foodLogServiceMock.Object.PatchFoodEntryAnalysisAsync(entryId, json, ct);
+
+        // Assert
+        foodLogServiceMock.VerifyAll();
+        foodLogRepositoryMock.VerifyAll();
+        userProfileRepositoryMock.VerifyAll();
+        foodAnalysisServiceMock.VerifyAll();
+        alternativeImageServiceMock.VerifyAll();
+        suggestAlternativeServiceMock.VerifyAll();
+    }
+
+    [TestMethod]
+    public async Task PatchFoodEntryAnalysisAsync_ShouldThrowNotFoundException_WhenEntryMissing()
+    {
+        // Arrange
+        var entryId = 999;
+        const string json = """{"compatible":true,"severity":"None"}""";
+        var ct = CancellationToken.None;
+
+        foodLogServiceMock
+            .Setup(s => s.PatchFoodEntryAnalysisAsync(entryId, json, ct))
+            .CallBase()
+            .Verifiable(Times.Once());
+
+        foodLogRepositoryMock
+            .Setup(r => r.FoodEntryPatchAnalysisAsync(entryId, json, ct))
+            .ThrowsAsync(new NotFoundException($"Food entry not found (EntryId: {entryId})."))
+            .Verifiable(Times.Once());
+
+        // Act & Assert
+        var exception = await Assert.ThrowsExceptionAsync<NotFoundException>(
+            () => foodLogServiceMock.Object.PatchFoodEntryAnalysisAsync(entryId, json, ct));
+
+        exception.Message.Should().Contain(entryId.ToString());
+        foodLogServiceMock.VerifyAll();
+        foodLogRepositoryMock.VerifyAll();
+        userProfileRepositoryMock.VerifyAll();
+        foodAnalysisServiceMock.VerifyAll();
+        alternativeImageServiceMock.VerifyAll();
+        suggestAlternativeServiceMock.VerifyAll();
+    }
 }

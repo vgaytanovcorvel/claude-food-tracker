@@ -11,7 +11,8 @@ namespace MisteryApp.Web.Core.Controllers;
 [Route("api/food-entries")]
 public class FoodEntriesController(
     IFoodLogService foodLogService,
-    IVisionFoodIdentificationService visionService) : ControllerBase
+    IVisionFoodIdentificationService visionService,
+    IFoodAnalysisPreviewService foodAnalysisPreviewService) : ControllerBase
 {
     [HttpPost]
     [ProducesResponseType(typeof(ApiResponse<FoodEntry>), StatusCodes.Status201Created)]
@@ -105,6 +106,31 @@ public class FoodEntriesController(
     {
         var result = await foodLogService.GetImageForFoodNameAsync(foodName, userId, cancellationToken);
         return Ok(ApiResponse<AlternativeImageResult>.Ok(result));
+    }
+
+    [HttpPost("analyse-preview")]
+    [ProducesResponseType(typeof(ApiResponse<AnalysisPreviewResult>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<AnalysisPreviewResult>>> AnalysePreview(
+        [FromBody] AnalysePreviewRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await foodAnalysisPreviewService.AnalysePreviewAsync(
+            request.FoodName, request.UserId, cancellationToken);
+        return Ok(ApiResponse<AnalysisPreviewResult>.Ok(result));
+    }
+
+    [HttpPatch("{id:int}/analysis")]
+    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<bool>>> PatchAnalysis(
+        int id,
+        [FromBody] PatchFoodEntryAnalysisRequest request,
+        CancellationToken cancellationToken)
+    {
+        await foodLogService.PatchFoodEntryAnalysisAsync(id, request.AnalysisResultJson, cancellationToken);
+        return Ok(ApiResponse<bool>.Ok(true));
     }
 
     [HttpPost("identify")]

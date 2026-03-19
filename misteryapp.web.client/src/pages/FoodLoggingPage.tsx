@@ -5,11 +5,14 @@ import {
   createFoodEntry,
   identifyFood,
   analyseEntry,
+  analysePreview,
+  patchAnalysis,
   getAlternativeImage,
   getImageForFoodName,
   suggestAlternative,
   type FoodEntrySource,
   type FoodAnalysisResult,
+  type AnalysisPreviewResult,
   type AlternativeImageResult,
 } from '../api/foodLogApi'
 import { createBookmark } from '../api/bookmarksApi'
@@ -22,21 +25,48 @@ export default function FoodLoggingPage() {
   const analyseAbortRef = useRef<AbortController | null>(null)
   const imageAbortRef = useRef<AbortController | null>(null)
   const suggestAbortRef = useRef<AbortController | null>(null)
+  const previewAbortRef = useRef<AbortController | null>(null)
+  const preSaveImageAbortRef = useRef<AbortController | null>(null)
+  // Signals the next foodName change should fire preview with 0 delay (high-confidence Vision)
+  const immediatePreviewRef = useRef(false)
+  // Tracks whether calories have been manually edited (avoids stale closure in useEffect)
+  const calorieUserEditedRef = useRef(false)
 
   useEffect(() => () => {
     identifyAbortRef.current?.abort()
     analyseAbortRef.current?.abort()
     imageAbortRef.current?.abort()
     suggestAbortRef.current?.abort()
+    previewAbortRef.current?.abort()
+    preSaveImageAbortRef.current?.abort()
   }, [])
 
+  // Form state
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [foodName, setFoodName] = useState('')
-  const [calories, setCalories] = useState('')
   const [source, setSource] = useState<FoodEntrySource>('Manual')
   const [identifying, setIdentifying] = useState(false)
   const [aiIdentified, setAiIdentified] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  // Calorie pill state (S10.6)
+  const [calories, setCalories] = useState(0)
+  const [aiCalories, setAiCalories] = useState(0)
+  const [calorieUserEdited, setCalorieUserEdited] = useState(false)
+  const [calorieExpanded, setCalorieExpanded] = useState(false)
+  const [calorieEditValue, setCalorieEditValue] = useState('')
+
+  // Pre-save analysis preview (S10.4 / S10.5)
+  const [previewResult, setPreviewResult] = useState<AnalysisPreviewResult | null>(null)
+  const [previewedFoodName, setPreviewedFoodName] = useState('')
+  const [previewLoading, setPreviewLoading] = useState(false)
+
+  // Pre-save alternative image
+  const [preSaveImage, setPreSaveImage] = useState<AlternativeImageResult | null>(null)
+  const [preSaveImageLoading, setPreSaveImageLoading] = useState(false)
+
+  // Post-save analysis phase
   const [analysing, setAnalysing] = useState(false)
   const [analysisResult, setAnalysisResult] = useState<FoodAnalysisResult | null>(null)
   const [savedFoodName, setSavedFoodName] = useState('')
@@ -49,7 +79,58 @@ export default function FoodLoggingPage() {
   const [shownAlternatives, setShownAlternatives] = useState<string[]>([])
   const [suggestClickCount, setSuggestClickCount] = useState(0)
   const [suggestingAlternative, setSuggestingAlternative] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+
+  // Debounced pre-analysis effect — fires on every foodName change (S10.4 / S10.5)
+  useEffect(() => {
+    previewAbortRef.current?.abort()
+    setPreviewResult(null)
+    setPreviewedFoodName('')
+    setPreSaveImage(null)
+    preSaveImageAbortRef.current?.abort()
+
+    if (!userId || foodName.trim().length < 4) return
+
+    const delay = immediatePreviewRef.current ? 0 : 1200
+    immediatePreviewRef.current = false
+
+    const ac = new AbortController()
+    const timer = setTimeout(async () => {
+      previewAbortRef.current = ac
+      setPreviewLoading(true)
+      try {
+        const result = await analysePreview(foodName.trim(), parseInt(userId, 10), ac.signal)
+        if (ac.signal.aborted || !result) return
+        setPreviewResult(result)
+        setPreviewedFoodName(foodName.trim())
+        if (!calorieUserEditedRef.current && result.estimatedCalories > 0) {
+          setAiCalories(result.estimatedCalories)
+          setCalories(result.estimatedCalories)
+        }
+        if (!result.compatible && result.alternativeFoodName) {
+          const imgAc = new AbortController()
+          preSaveImageAbortRef.current = imgAc
+          setPreSaveImageLoading(true)
+          getImageForFoodName(result.alternativeFoodName, parseInt(userId, 10), imgAc.signal)
+            .then(img => {
+              if (!imgAc.signal.aborted) {
+                setPreSaveImage(img)
+                setPreSaveImageLoading(false)
+              }
+            })
+            .catch(() => {
+              if (!imgAc.signal.aborted) setPreSaveImageLoading(false)
+            })
+        }
+      } finally {
+        if (!ac.signal.aborted) setPreviewLoading(false)
+      }
+    }, delay)
+
+    return () => {
+      clearTimeout(timer)
+      ac.abort()
+    }
+  }, [foodName, userId])
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -67,8 +148,14 @@ export default function FoodLoggingPage() {
     try {
       const result = await identifyFood(file, parseInt(userId, 10), controller.signal)
       if (!controller.signal.aborted && result && result.foodName) {
+        if (result.confidenceLevel >= 0.85) {
+          immediatePreviewRef.current = true
+        }
+        if (!calorieUserEditedRef.current) {
+          setAiCalories(result.estimatedCalories)
+          setCalories(result.estimatedCalories)
+        }
         setFoodName(result.foodName)
-        setCalories(String(result.estimatedCalories))
         setAiIdentified(true)
       }
     } catch {
@@ -83,7 +170,27 @@ export default function FoodLoggingPage() {
     setPreviewUrl(null)
     setSource('Manual')
     setAiIdentified(false)
+    setAiCalories(0)
+    if (!calorieUserEditedRef.current) setCalories(0)
     if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  function handleFoodNameChange(value: string) {
+    setFoodName(value)
+    setAiIdentified(false)
+  }
+
+  function handleCaloriePillClick() {
+    setCalorieEditValue(String(calories || ''))
+    setCalorieExpanded(true)
+  }
+
+  function handleCalorieConfirm() {
+    const val = Math.max(0, Math.min(9999, parseInt(calorieEditValue) || 0))
+    setCalories(val)
+    setCalorieUserEdited(true)
+    calorieUserEditedRef.current = true
+    setCalorieExpanded(false)
   }
 
   async function handleSave() {
@@ -91,54 +198,100 @@ export default function FoodLoggingPage() {
       setError('No user session found. Please return to onboarding.')
       return
     }
-    const cal = Math.trunc(parseFloat(calories))
     if (!foodName.trim()) {
       setError('Food name is required.')
       return
     }
-    if (isNaN(cal) || cal < 0 || cal > 9999) {
+    if (calories < 0 || calories > 9999) {
       setError('Please enter a calorie count between 0 and 9999.')
       return
     }
+
+    const usePreview = previewResult !== null && previewedFoodName === foodName.trim()
+
     setSaving(true)
     setError(null)
     try {
-      const entry = await createFoodEntry(parseInt(userId, 10), foodName.trim(), cal, source)
+      const entry = await createFoodEntry(parseInt(userId, 10), foodName.trim(), calories, source)
       setSavedEntryId(entry.id)
       if (previewUrl) URL.revokeObjectURL(previewUrl)
       setPreviewUrl(null)
       setSavedFoodName(foodName.trim())
       setSaving(false)
-      setAnalysing(true)
-      analyseAbortRef.current?.abort()
-      const analyseController = new AbortController()
-      analyseAbortRef.current = analyseController
-      const result = await analyseEntry(entry.id, analyseController.signal)
-      if (analyseController.signal.aborted) return
-      setAnalysing(false)
-      if (result) {
+
+      if (usePreview) {
+        previewAbortRef.current?.abort()
+        const analysisJson = JSON.stringify({
+          compatible: previewResult.compatible,
+          severity: previewResult.severity,
+          educationText: previewResult.educationText,
+          alternativeFoodName: previewResult.alternativeFoodName,
+          estimatedCalories: previewResult.estimatedCalories,
+        })
+        await patchAnalysis(entry.id, analysisJson)
+        const result: FoodAnalysisResult = {
+          compatible: previewResult.compatible,
+          severity: previewResult.severity,
+          educationText: previewResult.educationText ?? '',
+          alternativeFoodName: previewResult.alternativeFoodName,
+          estimatedCalories: previewResult.estimatedCalories,
+        }
         setAnalysisResult(result)
+        setAnalysing(false)
         if (!result.compatible && result.alternativeFoodName) {
           setCurrentAlternativeName(result.alternativeFoodName)
           setShownAlternatives([result.alternativeFoodName])
           setSuggestClickCount(0)
-          imageAbortRef.current?.abort()
-          const imgController = new AbortController()
-          imageAbortRef.current = imgController
-          setLoadingImage(true)
-          getAlternativeImage(entry.id, imgController.signal)
-            .then(img => {
-              if (!imgController.signal.aborted) {
-                setAlternativeImage(img)
-                setLoadingImage(false)
-              }
-            })
-            .catch(() => {
-              if (!imgController.signal.aborted) setLoadingImage(false)
-            })
+          if (preSaveImage) {
+            setAlternativeImage(preSaveImage)
+          } else if (preSaveImageLoading) {
+            // Keep loading indicator and transfer the in-flight request
+            setLoadingImage(true)
+            preSaveImageAbortRef.current = null
+            const imgAc = new AbortController()
+            imageAbortRef.current = imgAc
+            getImageForFoodName(result.alternativeFoodName, parseInt(userId, 10), imgAc.signal)
+              .then(img => {
+                if (!imgAc.signal.aborted) {
+                  setAlternativeImage(img)
+                  setLoadingImage(false)
+                }
+              })
+              .catch(() => { if (!imgAc.signal.aborted) setLoadingImage(false) })
+          }
         }
       } else {
-        navigate('/')
+        setAnalysing(true)
+        analyseAbortRef.current?.abort()
+        const analyseController = new AbortController()
+        analyseAbortRef.current = analyseController
+        const result = await analyseEntry(entry.id, analyseController.signal)
+        if (analyseController.signal.aborted) return
+        setAnalysing(false)
+        if (result) {
+          setAnalysisResult(result)
+          if (!result.compatible && result.alternativeFoodName) {
+            setCurrentAlternativeName(result.alternativeFoodName)
+            setShownAlternatives([result.alternativeFoodName])
+            setSuggestClickCount(0)
+            imageAbortRef.current?.abort()
+            const imgController = new AbortController()
+            imageAbortRef.current = imgController
+            setLoadingImage(true)
+            getAlternativeImage(entry.id, imgController.signal)
+              .then(img => {
+                if (!imgController.signal.aborted) {
+                  setAlternativeImage(img)
+                  setLoadingImage(false)
+                }
+              })
+              .catch(() => {
+                if (!imgController.signal.aborted) setLoadingImage(false)
+              })
+          }
+        } else {
+          navigate('/')
+        }
       }
     } catch (err) {
       setSaving(false)
@@ -184,13 +337,15 @@ export default function FoodLoggingPage() {
 
   const showAnalysisPhase = analysing || analysisResult !== null
   const isHighSeverity = analysisResult !== null && !analysisResult.compatible && analysisResult.severity === 'High'
+  const previewValid = previewResult !== null && previewedFoodName === foodName.trim()
+  const previewIsHighSeverity = previewResult !== null && !previewResult.compatible && previewResult.severity === 'High'
 
   return (
     <div className="flex min-h-screen items-center justify-center p-6">
       <div className="glass-modal w-full max-w-md p-10 space-y-6">
         <h1 className="text-display-md text-white font-bold tracking-tight">Log Food</h1>
 
-        {/* Analysis phase */}
+        {/* Post-save analysis phase */}
         {showAnalysisPhase && (
           <div className="space-y-5 pt-3">
             <p className="text-sm text-glass-muted">
@@ -225,7 +380,6 @@ export default function FoodLoggingPage() {
                       : '0 0 28px rgba(245,158,11,0.08) inset',
                 }}
               >
-                {/* Status header */}
                 <div className="flex items-center gap-2.5 flex-wrap">
                   {analysisResult.compatible ? (
                     <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-300">
@@ -234,9 +388,7 @@ export default function FoodLoggingPage() {
                     </span>
                   ) : (
                     <>
-                      <span className={`text-xs font-bold px-2.5 py-1 rounded-full text-white ${
-                        isHighSeverity ? 'bg-red-500' : 'bg-amber-500'
-                      }`}>
+                      <span className={`text-xs font-bold px-2.5 py-1 rounded-full text-white ${isHighSeverity ? 'bg-red-500' : 'bg-amber-500'}`}>
                         {analysisResult.severity}
                       </span>
                       <span className="text-sm text-glass-text font-semibold">Diet conflict detected</span>
@@ -252,10 +404,7 @@ export default function FoodLoggingPage() {
                   <div className="space-y-2">
                     <p className="text-xs text-glass-muted uppercase tracking-widest" style={{ fontSize: '10px' }}>Try instead</p>
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span
-                        className="font-semibold"
-                        style={{ fontSize: '0.95rem', color: 'rgba(56,189,248,0.95)', letterSpacing: '0.01em' }}
-                      >
+                      <span className="font-semibold" style={{ fontSize: '0.95rem', color: 'rgba(56,189,248,0.95)', letterSpacing: '0.01em' }}>
                         {currentAlternativeName}
                       </span>
                       {!bookmarkSaved && (
@@ -289,7 +438,6 @@ export default function FoodLoggingPage() {
                   </div>
                 )}
 
-                {/* AI-generated alternative image */}
                 {!analysisResult.compatible && (
                   <>
                     {loadingImage && (
@@ -316,10 +464,7 @@ export default function FoodLoggingPage() {
                   </button>
                 )}
 
-                <button
-                  onClick={() => navigate('/')}
-                  className="btn-primary w-full py-3"
-                >
+                <button onClick={() => navigate('/')} className="btn-primary w-full py-3">
                   Done
                 </button>
               </div>
@@ -327,7 +472,7 @@ export default function FoodLoggingPage() {
           </div>
         )}
 
-        {/* Entry form — hidden during analysis phase */}
+        {/* Entry form — hidden during post-save analysis phase */}
         {!showAnalysisPhase && (
           <>
             {/* Photo capture / file picker */}
@@ -361,7 +506,7 @@ export default function FoodLoggingPage() {
               </div>
             )}
 
-            {/* AI identification skeleton loader */}
+            {/* AI identification skeleton */}
             {identifying && (
               <div className="space-y-2 animate-pulse" aria-label="Identifying food">
                 <div className="h-4 bg-white/20 rounded w-1/3" />
@@ -372,9 +517,9 @@ export default function FoodLoggingPage() {
               </div>
             )}
 
-            {/* Food name + calories fields */}
             {!identifying && (
               <>
+                {/* Food name field */}
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <label htmlFor="food-name" className="field-label">Food name</label>
@@ -386,48 +531,134 @@ export default function FoodLoggingPage() {
                     id="food-name"
                     type="text"
                     value={foodName}
-                    onChange={e => { setFoodName(e.target.value); setAiIdentified(false) }}
+                    onChange={e => handleFoodNameChange(e.target.value)}
                     placeholder="e.g. Chicken breast"
                     className="input-glass"
                   />
                 </div>
 
+                {/* Calorie pill (S10.6) */}
                 <div className="space-y-1.5">
-                  <label htmlFor="calories" className="field-label">
-                    Estimated calories{aiIdentified ? ' · AI estimate' : ''}
-                  </label>
-                  <input
-                    id="calories"
-                    type="number"
-                    min="0"
-                    max="9999"
-                    step="1"
-                    value={calories}
-                    onChange={e => setCalories(e.target.value)}
-                    placeholder="e.g. 300"
-                    className="input-glass"
-                  />
+                  <label className="field-label">Estimated calories</label>
+                  {calorieExpanded ? (
+                    <input
+                      type="number"
+                      min="0"
+                      max="9999"
+                      step="1"
+                      value={calorieEditValue}
+                      onChange={e => setCalorieEditValue(e.target.value)}
+                      onBlur={handleCalorieConfirm}
+                      onKeyDown={e => { if (e.key === 'Enter') handleCalorieConfirm() }}
+                      autoFocus
+                      className="input-glass"
+                      placeholder="e.g. 300"
+                    />
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleCaloriePillClick}
+                      className="w-full text-left px-4 py-2.5 rounded-xl transition-colors"
+                      style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)' }}
+                    >
+                      {calories > 0 ? (
+                        <span className="text-sm font-medium text-white">
+                          {!calorieUserEdited && '~'}{calories} kcal
+                        </span>
+                      ) : (
+                        <span className="text-sm text-glass-muted">Tap to set calories</span>
+                      )}
+                    </button>
+                  )}
+                </div>
+
+                {/* Pre-save analysis preview card (S10.4 / S10.5) */}
+                {previewLoading && (
+                  <div className="space-y-2 animate-pulse" aria-label="Analysing diet compatibility">
+                    <div className="h-20 bg-white/10 rounded-2xl" />
+                    <p className="text-xs text-glass-muted text-center">Checking diet compatibility…</p>
+                  </div>
+                )}
+
+                {!previewLoading && previewValid && (
+                  <div
+                    className="rounded-2xl p-5 space-y-3"
+                    style={{
+                      background: previewResult!.compatible
+                        ? 'rgba(16,185,129,0.06)'
+                        : previewIsHighSeverity
+                          ? 'rgba(239,68,68,0.06)'
+                          : 'rgba(245,158,11,0.06)',
+                      border: previewResult!.compatible
+                        ? '1px solid rgba(52,211,153,0.35)'
+                        : previewIsHighSeverity
+                          ? '1px solid rgba(239,68,68,0.45)'
+                          : '1px solid rgba(251,191,36,0.40)',
+                    }}
+                  >
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {previewResult!.compatible ? (
+                        <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-300">
+                          <span className="w-4 h-4 rounded-full bg-emerald-400/20 flex items-center justify-center text-[10px]">✓</span>
+                          Great choice!
+                        </span>
+                      ) : (
+                        <>
+                          <span className={`text-xs font-bold px-2.5 py-1 rounded-full text-white ${previewIsHighSeverity ? 'bg-red-500' : 'bg-amber-500'}`}>
+                            {previewResult!.severity}
+                          </span>
+                          <span className="text-sm text-glass-text font-semibold">Diet conflict detected</span>
+                        </>
+                      )}
+                    </div>
+
+                    {previewResult!.educationText && (
+                      <p style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.85)', lineHeight: '1.5' }}>
+                        {previewResult!.educationText}
+                      </p>
+                    )}
+
+                    {!previewResult!.compatible && previewResult!.alternativeFoodName && (
+                      <div className="space-y-1.5">
+                        <p className="text-xs text-glass-muted uppercase tracking-widest" style={{ fontSize: '10px' }}>Try instead</p>
+                        <span className="font-semibold" style={{ fontSize: '0.9rem', color: 'rgba(56,189,248,0.95)' }}>
+                          {previewResult!.alternativeFoodName}
+                        </span>
+                        {(preSaveImageLoading) && (
+                          <div className="animate-pulse rounded-xl overflow-hidden h-32 bg-white/10 mt-2" />
+                        )}
+                        {!preSaveImageLoading && preSaveImage?.imageBase64 && (
+                          <img
+                            src={`data:${preSaveImage.mimeType ?? 'image/png'};base64,${preSaveImage.imageBase64}`}
+                            alt={`Suggested alternative: ${previewResult!.alternativeFoodName}`}
+                            className="w-full rounded-xl object-cover max-h-36 mt-2"
+                          />
+                        )}
+                        <p className="text-xs text-glass-muted mt-1">Save to explore more alternatives.</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {error && <p className="text-red-400 text-sm">{error}</p>}
+
+                <div className="flex gap-3 pt-1">
+                  <button
+                    onClick={() => { if (previewUrl) URL.revokeObjectURL(previewUrl); navigate('/') }}
+                    className="btn-ghost flex-1 py-3"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSave}
+                    disabled={saving || identifying}
+                    className="btn-primary flex-1 py-3"
+                  >
+                    {saving ? 'Saving…' : 'Save'}
+                  </button>
                 </div>
               </>
             )}
-
-            {error && <p className="text-red-400 text-sm">{error}</p>}
-
-            <div className="flex gap-3 pt-1">
-              <button
-                onClick={() => { if (previewUrl) URL.revokeObjectURL(previewUrl); navigate('/') }}
-                className="btn-ghost flex-1 py-3"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={saving || identifying}
-                className="btn-primary flex-1 py-3"
-              >
-                {saving ? 'Saving…' : 'Save'}
-              </button>
-            </div>
           </>
         )}
       </div>

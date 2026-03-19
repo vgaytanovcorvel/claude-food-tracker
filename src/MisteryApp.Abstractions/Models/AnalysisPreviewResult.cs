@@ -2,9 +2,9 @@ using MisteryApp.Abstractions.Enums;
 
 namespace MisteryApp.Abstractions.Models;
 
-public record FoodAnalysisResult(
+public record AnalysisPreviewResult(
     bool Compatible,
     AnalysisSeverity Severity,
-    string EducationText,
+    string? EducationText,
     string? AlternativeFoodName,
-    int EstimatedCalories = 0);
+    int EstimatedCalories);

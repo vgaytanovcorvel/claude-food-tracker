@@ -155,6 +155,21 @@ public class GeminiFoodAnalysisServiceTests
         result.Severity.Should().Be(AnalysisSeverity.None);
     }
 
+    [TestMethod]
+    public async Task AnalyseFoodAsync_ShouldReturnEstimatedCalories_WhenGeminiIncludesThem()
+    {
+        // Arrange
+        const string innerJson = """{"compatible": false, "severity": "Medium", "educationText": "Pasta is high in carbs.", "alternativeFoodName": "Zucchini Pasta", "estimatedCalories": 220}""";
+        var httpClient = CreateHttpClient(HttpStatusCode.OK, BuildGeminiResponse(innerJson));
+        var service = new GeminiFoodAnalysisService(httpClient, options);
+
+        // Act
+        var result = await service.AnalyseFoodAsync("Pasta", DietStyle.Keto, CancellationToken.None);
+
+        // Assert
+        result.EstimatedCalories.Should().Be(220);
+    }
+
     private sealed class FakeHttpMessageHandler(HttpStatusCode statusCode, string content) : HttpMessageHandler
     {
         protected override Task<HttpResponseMessage> SendAsync(

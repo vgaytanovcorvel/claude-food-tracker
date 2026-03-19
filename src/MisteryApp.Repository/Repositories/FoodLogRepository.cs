@@ -53,6 +53,16 @@ public class FoodLogRepository(IDbContextFactory<ApplicationDbContext> contextFa
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
+    public virtual async Task FoodEntryPatchAnalysisAsync(int id, string analysisJson, CancellationToken cancellationToken)
+    {
+        await using var dbContext = await CreateContextAsync(cancellationToken);
+        var entity = await dbContext.FoodLog
+            .FirstOrDefaultAsync(e => e.Id == id, cancellationToken)
+            ?? throw new NotFoundException($"Food entry not found (EntryId: {id}).");
+        entity.AnalysisResult = analysisJson;
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
     public virtual async Task<IReadOnlyList<FoodEntry>> FoodEntryGetByUserAndDateAsync(int userId, DateOnly date, int timezoneOffsetMinutes, CancellationToken cancellationToken)
     {
         await using var dbContext = await CreateContextAsync(cancellationToken);
