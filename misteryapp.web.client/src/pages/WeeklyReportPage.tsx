@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useIdentity } from '../hooks/useIdentity'
 import { getWeeklyReport, type WeeklyReport, type DailyCalorieSummary } from '../api/reportApi'
 import ComplianceArc from '../components/ComplianceArc'
+import BottomNav from '../components/BottomNav'
 
 function getMondayOfWeek(dateStr: string): string {
   const [year, month, day] = dateStr.split('-').map(Number)
@@ -43,22 +45,34 @@ const SHORT_DAY = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 function CalorieBarChart({ summaries }: { summaries: DailyCalorieSummary[] }) {
   const maxCalories = Math.max(...summaries.map(s => s.totalCalories), 1)
   return (
-    <div className="flex items-stretch gap-1 h-24">
+    <div className="flex justify-between items-end gap-1" style={{ height: '112px' }}>
       {summaries.map((s, i) => {
         const heightPct = s.hasEntries ? Math.max((s.totalCalories / maxCalories) * 100, 6) : 0
-        const barColor = !s.hasEntries
-          ? 'bg-white/10'
+        const barBackground = !s.hasEntries
+          ? 'rgba(255,255,255,0.10)'
           : s.conflictCount > s.onGoalCount
-            ? 'bg-amber-500/60'
-            : 'bg-brand-500/60'
+            ? 'linear-gradient(to bottom, #fbbf24, #d97706)'
+            : 'linear-gradient(180deg, #38bdf8 0%, #0ea5e9 100%)'
         return (
-          <div key={s.date} className="flex-1 h-full flex flex-col items-center justify-end gap-0.5">
+          <div key={s.date} className="flex-1 flex flex-col items-center justify-end gap-1" style={{ height: '100%' }}>
             <div
-              className={`w-full rounded-t-sm transition-all ${barColor}`}
-              style={{ height: `${heightPct}%` }}
+              style={{
+                width: '24px',
+                height: s.hasEntries ? `${heightPct}%` : '4px',
+                background: barBackground,
+                borderRadius: '4px 4px 0 0',
+                transition: 'height 0.6s cubic-bezier(0.4,0,0.2,1)',
+                filter: s.hasEntries
+                  ? s.conflictCount <= s.onGoalCount
+                    ? 'drop-shadow(0 0 15px rgba(14,165,233,0.7))'
+                    : 'drop-shadow(0 0 15px rgba(251,191,36,0.5))'
+                  : 'none',
+              }}
               title={s.hasEntries ? `${s.date}: ${s.totalCalories} kcal` : `${s.date}: no entries`}
             />
-            <span className="text-glass-muted text-xs">{SHORT_DAY[i]}</span>
+            <span className="text-glass-muted text-xs uppercase" style={{ fontSize: '10px', letterSpacing: '0.08em' }}>
+              {SHORT_DAY[i]}
+            </span>
           </div>
         )
       })}
@@ -102,19 +116,26 @@ export default function WeeklyReportPage() {
   }, [userId, weekStart, navigate])
 
   return (
-    <div className="flex min-h-screen items-start justify-center p-6">
-      <div className="glass-surface-lg w-full max-w-lg p-8 space-y-6">
+    <div className="flex min-h-screen items-center justify-center p-6 pb-28">
+      <div className="glass-modal w-full max-w-lg px-8 py-10 flex flex-col justify-center gap-6" style={{ minHeight: '520px' }}>
         <div className="flex items-center justify-between">
           <h1 className="text-display-md text-glass-text">Weekly Report</h1>
-          <Link to="/" className="text-sm text-brand-500 hover:underline">Home</Link>
+          <Link
+            to="/reports/monthly"
+            className="btn-ghost px-4 py-2 text-xs"
+            style={{ color: 'rgba(255,255,255,0.6)' }}
+          >
+            Monthly →
+          </Link>
         </div>
 
         {/* Week navigation */}
         <div className="flex items-center justify-between gap-2">
           <button
             onClick={() => setWeekStart(w => offsetWeek(w, -1))}
-            className="text-brand-500 hover:underline text-sm px-2 py-1"
+            className="w-9 h-9 flex items-center justify-center rounded-xl text-white/50 hover:text-white hover:bg-white/8 transition-all duration-200 text-lg"
             aria-label="Previous week"
+            style={{ border: '1px solid rgba(255,255,255,0.10)' }}
           >
             ←
           </button>
@@ -123,8 +144,9 @@ export default function WeeklyReportPage() {
           </span>
           <button
             onClick={() => setWeekStart(w => offsetWeek(w, 1))}
-            className="text-brand-500 hover:underline text-sm px-2 py-1"
+            className="w-9 h-9 flex items-center justify-center rounded-xl text-white/50 hover:text-white hover:bg-white/8 transition-all duration-200 text-lg"
             aria-label="Next week"
+            style={{ border: '1px solid rgba(255,255,255,0.10)' }}
           >
             →
           </button>
@@ -134,56 +156,52 @@ export default function WeeklyReportPage() {
 
         {loading && (
           <div className="space-y-3 animate-pulse">
-            <div className="h-24 rounded-lg bg-white/10" />
-            <div className="h-16 rounded-lg bg-white/10" />
+            <div className="h-28 rounded-2xl bg-white/10" />
+            <div className="h-16 rounded-2xl bg-white/10" />
           </div>
         )}
 
         {!loading && report && (
           <>
             {/* Calorie bar chart */}
-            <div className="border border-glass-border rounded-lg p-4 space-y-2">
-              <p className="text-glass-muted text-xs uppercase tracking-wide">Daily Calories</p>
+            <div className="rounded-2xl p-5 space-y-3" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <p className="text-glass-muted text-xs uppercase tracking-widest" style={{ fontSize: '10px' }}>Daily Calories</p>
               <CalorieBarChart summaries={report.dailySummaries} />
             </div>
 
             {/* Summary row */}
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-6 rounded-2xl p-5" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
               <ComplianceArc rate={report.complianceRate} />
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <p className="text-glass-text font-semibold">{report.totalCalories} kcal total</p>
-                <p className="text-glass-muted text-sm">{report.motivatingCopy}</p>
+                <p className="text-glass-muted text-sm leading-relaxed">{report.motivatingCopy}</p>
               </div>
             </div>
 
             {/* Pattern insight */}
             {report.patternInsight && (
-              <div className="border border-amber-500/30 rounded-lg px-4 py-3 bg-amber-500/10">
-                <p className="text-amber-300 text-sm">{report.patternInsight}</p>
+              <div className="rounded-2xl px-5 py-4 bg-amber-500/10" style={{ border: '1px solid rgba(245,158,11,0.25)' }}>
+                <p className="text-amber-300 text-sm leading-relaxed">{report.patternInsight}</p>
               </div>
             )}
 
             {/* Empty state */}
             {!report.dailySummaries.some(d => d.hasEntries) && (
-              <p className="text-glass-muted text-sm">
-                No entries this week — tap &lsquo;Log food&rsquo; to start tracking.
-              </p>
+              <div className="flex flex-col items-center gap-3 py-6 text-center">
+                <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: 'rgba(14,165,233,0.10)', border: '1px solid rgba(14,165,233,0.2)' }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(56,189,248,0.6)" strokeWidth="1.5" strokeLinecap="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="3" y1="10" x2="21" y2="10" />
+                    <line x1="8" y1="2" x2="8" y2="6" /><line x1="16" y1="2" x2="16" y2="6" />
+                  </svg>
+                </div>
+                <p className="text-glass-muted text-sm">No entries this week — start logging to see your trends.</p>
+              </div>
             )}
           </>
         )}
-
-        <div className="flex gap-4 pt-2">
-          <Link to="/reports/monthly" className="text-sm text-brand-500 hover:underline">
-            Monthly view
-          </Link>
-          <Link to="/daily-log" className="text-sm text-brand-500 hover:underline">
-            Daily log
-          </Link>
-          <Link to="/bookmarks" className="text-sm text-brand-500 hover:underline">
-            Bookmarks
-          </Link>
-        </div>
       </div>
+
+      <BottomNav />
     </div>
   )
 }

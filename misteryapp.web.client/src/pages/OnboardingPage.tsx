@@ -35,7 +35,7 @@ export default function OnboardingPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center p-6">
-      <div className="glass-surface-lg w-full max-w-md p-8 space-y-6">
+      <div className="glass-modal w-full max-w-md p-8 space-y-6">
         <div className="space-y-1">
           <h1 className="text-display-md text-glass-text">Welcome</h1>
           <p className="text-body-lg text-glass-muted">Set up your profile to get started.</p>
@@ -43,29 +43,27 @@ export default function OnboardingPage() {
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-glass-text" htmlFor="name">
-              Your name
-            </label>
+            <label className="field-label" htmlFor="name">Your name</label>
             <input
               id="name"
               type="text"
               value={name}
               onChange={e => setName(e.target.value)}
               placeholder="e.g. Alex"
-              className="w-full rounded-lg border border-glass-border bg-glass-white px-4 py-3 text-glass-text placeholder:text-glass-muted focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="input-glass"
             />
           </div>
 
           <div className="space-y-2">
-            <p className="text-sm font-medium text-glass-text">Diet style</p>
+            <span className="field-label">Diet style</span>
             <div className="space-y-2">
               {DIET_OPTIONS.map(opt => (
                 <label
                   key={opt.value}
-                  className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors ${
+                  className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3.5 transition-colors ${
                     dietStyle === opt.value
-                      ? 'border-brand-500 bg-brand-500/10'
-                      : 'border-glass-border bg-glass-white'
+                      ? 'border-brand-500/60 bg-brand-500/10'
+                      : 'border-white/10 bg-white/5'
                   }`}
                 >
                   <input
@@ -88,7 +86,7 @@ export default function OnboardingPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-lg bg-brand-500 px-6 py-3 font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+            className="btn-primary w-full py-3"
           >
             {loading ? 'Creating...' : 'Get started'}
           </button>

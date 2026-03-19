@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useIdentity } from '../hooks/useIdentity'
 import {
   getDailyEntries,
@@ -8,6 +9,7 @@ import {
   type FoodEntry,
   type DailyLogSummary,
 } from '../api/foodLogApi'
+import BottomNav from '../components/BottomNav'
 
 function formatDate(d: string): string {
   const [year, month, day] = d.split('-').map(Number)
@@ -35,8 +37,7 @@ function todayString(): string {
 function getWeekDays(dateStr: string): string[] {
   const [year, month, day] = dateStr.split('-').map(Number)
   const d = new Date(year, month - 1, day)
-  // Get Monday of the current week
-  const dayOfWeek = d.getDay() === 0 ? 6 : d.getDay() - 1 // 0=Mon...6=Sun
+  const dayOfWeek = d.getDay() === 0 ? 6 : d.getDay() - 1
   const monday = new Date(year, month - 1, day - dayOfWeek)
   return Array.from({ length: 7 }, (_, i) => {
     const curr = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i)
@@ -123,36 +124,35 @@ export default function DailyLogPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-start justify-center p-6">
-      <div className="glass-surface-lg w-full max-w-lg p-8 space-y-6">
+    <div className="flex min-h-screen items-center justify-center p-6 pb-28">
+      <div className="glass-modal w-full max-w-lg p-8 space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div>
           <h1 className="text-display-md text-glass-text">Daily Log</h1>
-          <Link to="/" className="text-sm text-brand-500 hover:underline">
-            Home
-          </Link>
         </div>
 
         {/* Date navigation */}
         <div className="flex items-center justify-between gap-2">
           <button
             onClick={() => setDate(d => offsetDate(d, -1))}
-            className="text-brand-500 hover:underline text-sm px-2 py-1"
+            className="w-9 h-9 flex items-center justify-center rounded-xl text-white/50 hover:text-white hover:bg-white/8 transition-all duration-200 text-lg"
             aria-label="Previous day"
+            style={{ border: '1px solid rgba(255,255,255,0.10)' }}
           >
             ←
           </button>
           <span className="text-glass-text font-semibold">{formatDate(date)}</span>
           <button
             onClick={() => setDate(d => offsetDate(d, 1))}
-            className="text-brand-500 hover:underline text-sm px-2 py-1"
+            className="w-9 h-9 flex items-center justify-center rounded-xl text-white/50 hover:text-white hover:bg-white/8 transition-all duration-200 text-lg"
             aria-label="Next day"
+            style={{ border: '1px solid rgba(255,255,255,0.10)' }}
           >
             →
           </button>
         </div>
 
-        {/* Week strip — neutral, no streak markers */}
+        {/* Week strip — glowing pill active day */}
         <div className="flex justify-between gap-1">
           {getWeekDays(date).map((day, i) => {
             const isSelected = day === date
@@ -160,16 +160,28 @@ export default function DailyLogPage() {
               <button
                 key={day}
                 onClick={() => setDate(day)}
-                className={`flex flex-col items-center flex-1 py-1.5 rounded-lg text-xs transition-colors ${
+                className="flex flex-col items-center flex-1 py-2 rounded-2xl text-xs transition-all duration-200"
+                style={
                   isSelected
-                    ? 'bg-brand-500/30 text-brand-400 font-semibold'
-                    : 'text-glass-muted hover:bg-white/5'
-                }`}
+                    ? {
+                        background: 'linear-gradient(to bottom, #38bdf8, #0284c7)',
+                        boxShadow: '0 0 14px rgba(14,165,233,0.55), 0 4px 10px rgba(14,165,233,0.3)',
+                        color: 'white',
+                      }
+                    : {
+                        color: 'rgba(255,255,255,0.38)',
+                        background: 'transparent',
+                      }
+                }
                 aria-label={day}
                 aria-pressed={isSelected}
               >
-                <span>{DAY_LABELS[i]}</span>
-                <span>{day.split('-')[2]}</span>
+                <span className="font-semibold uppercase tracking-widest" style={{ fontSize: '9px' }}>
+                  {DAY_LABELS[i]}
+                </span>
+                <span className={`mt-0.5 font-${isSelected ? 'bold' : 'normal'} text-sm`}>
+                  {day.split('-')[2]}
+                </span>
               </button>
             )
           })}
@@ -177,11 +189,11 @@ export default function DailyLogPage() {
 
         {/* Summary strip */}
         {!loading && summary && (
-          <div className="border border-glass-border rounded-lg p-4 space-y-1">
-            <p className="text-glass-text font-semibold">
+          <div className="rounded-2xl p-5 space-y-1.5" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <p className="text-glass-text font-semibold text-base">
               {summary.totalCalories} kcal total
             </p>
-            <p className="text-glass-muted text-sm">{summary.complianceLabel}</p>
+            <p className="text-glass-muted text-sm leading-relaxed">{summary.complianceLabel}</p>
           </div>
         )}
 
@@ -194,18 +206,34 @@ export default function DailyLogPage() {
         {loading && (
           <div className="space-y-3 animate-pulse">
             {[1, 2, 3].map(i => (
-              <div key={i} className="h-14 rounded-lg bg-white/10" />
+              <div key={i} className="h-16 rounded-2xl bg-white/10" />
             ))}
           </div>
         )}
 
-        {/* Entry list */}
+        {/* Empty state */}
         {!loading && !error && entries.length === 0 && (
-          <p className="text-glass-muted text-sm">
-            Nothing logged yet — tap &lsquo;Log food&rsquo; to add your first meal today.
-          </p>
+          <div className="flex flex-col items-center gap-4 py-8 text-center">
+            <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ background: 'rgba(14,165,233,0.12)', border: '1px solid rgba(14,165,233,0.25)' }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(56,189,248,0.7)" strokeWidth="1.5" strokeLinecap="round">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-glass-text font-medium text-sm">Nothing logged yet</p>
+              <p className="text-glass-muted text-xs mt-1">Tap Log to add your first meal today.</p>
+            </div>
+            <Link
+              to="/food-log"
+              className="px-5 py-2 rounded-xl text-white text-sm font-semibold transition-all duration-200 hover:brightness-110"
+              style={{ background: 'linear-gradient(to bottom, #38bdf8, #0284c7)', boxShadow: '0 6px 16px -3px rgba(14,165,233,0.45)' }}
+            >
+              Log Food
+            </Link>
+          </div>
         )}
 
+        {/* Entry list */}
         {!loading && !error && entries.length > 0 && (
           <ul className="space-y-3">
             {entries.map(entry => {
@@ -215,10 +243,11 @@ export default function DailyLogPage() {
               return (
                 <li
                   key={entry.id}
-                  className="flex items-center justify-between border border-glass-border rounded-lg px-4 py-3 gap-3"
+                  className="flex items-center justify-between rounded-2xl px-5 py-4 gap-3"
+                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
                 >
-                  <div className="flex flex-col gap-1 min-w-0">
-                    <span className="text-glass-text font-medium truncate">
+                  <div className="flex flex-col gap-1.5 min-w-0">
+                    <span className="text-glass-text font-medium truncate leading-snug">
                       {entry.foodName}
                     </span>
                     <span className="text-glass-muted text-xs">
@@ -229,7 +258,7 @@ export default function DailyLogPage() {
                     {showBadge && <SeverityBadge severity={analysis!.severity} />}
                     <button
                       onClick={() => handleDelete(entry.id)}
-                      className="text-glass-muted hover:text-red-400 text-xs"
+                      className="text-white/25 hover:text-red-400 text-xs transition-colors duration-200"
                       aria-label={`Delete ${entry.foodName}`}
                     >
                       Remove
@@ -241,14 +270,19 @@ export default function DailyLogPage() {
           </ul>
         )}
 
-        {/* Log food CTA */}
-        <Link
-          to="/food-log"
-          className="inline-block text-brand-500 hover:underline text-sm"
-        >
-          Log food
-        </Link>
+        {/* Log food CTA (when entries exist) */}
+        {!loading && !error && entries.length > 0 && (
+          <Link
+            to="/food-log"
+            className="inline-block text-sm font-medium transition-colors duration-200"
+            style={{ color: 'rgba(56,189,248,0.8)' }}
+          >
+            + Log another meal
+          </Link>
+        )}
       </div>
+
+      <BottomNav />
     </div>
   )
 }

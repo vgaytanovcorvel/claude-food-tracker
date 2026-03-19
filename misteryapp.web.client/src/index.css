@@ -14,7 +14,13 @@
   }
 }
 
+@keyframes fadeinup {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 @layer components {
+  /* ── Glass surfaces ── */
   .glass-surface {
     @apply bg-glass-white backdrop-blur-glass border border-glass-border rounded-2xl shadow-glass;
   }
@@ -24,17 +30,18 @@
   }
 
   .glass-modal {
-    background: rgba(20, 26, 46, 0.70);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(25px) saturate(180%);
+    -webkit-backdrop-filter: blur(25px) saturate(180%);
     border: 1px solid rgba(255, 255, 255, 0.10);
-    border-top-color: rgba(255, 255, 255, 0.18);
-    border-radius: 1.5rem;
+    border-top-color: rgba(255, 255, 255, 0.15);
+    border-radius: 1.5rem;           /* 24px */
     box-shadow:
       0 25px 50px -12px rgba(0, 0, 0, 0.5),
       inset 0 1px 0 rgba(255, 255, 255, 0.08);
   }
 
+  /* ── Input ── */
   .input-glass {
     @apply w-full rounded-xl px-4 py-3 text-white placeholder:text-white/25
            transition-all duration-200 focus:outline-none;
@@ -59,5 +66,64 @@
 
   .input-glass[type="number"] {
     -moz-appearance: textfield;
+  }
+
+  /* ── Primary CTA button — blue gradient + glow ── */
+  /* Use with Tailwind for layout (w-full, flex-1, py-3, etc.) */
+  .btn-primary {
+    background: linear-gradient(to bottom, #38bdf8, #0284c7);
+    box-shadow: 0 4px 20px rgba(14, 165, 233, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    border-radius: 0.75rem;          /* 12px — half of card 24px */
+    color: white;
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: filter 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.15s;
+    cursor: pointer;
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    filter: brightness(1.12);
+  }
+
+  .btn-primary:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  /* ── Ghost button — transparent with subtle border ── */
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 0.75rem;          /* 12px — half of card 24px */
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 500;
+    font-size: 0.875rem;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+    cursor: pointer;
+  }
+
+  .btn-ghost:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.88);
+    border-color: rgba(255, 255, 255, 0.28);
+  }
+
+  .btn-ghost:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  /* ── Field label — consistent across all forms ── */
+  .field-label {
+    display: block;
+    font-size: 0.6875rem;            /* 11px */
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.7);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
   }
 }

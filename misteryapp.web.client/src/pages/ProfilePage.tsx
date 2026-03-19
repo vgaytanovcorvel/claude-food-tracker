@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { type DietStyle, type UserProfile, getUserProfile, updateUserProfile, deleteUserProfile } from '../api/userProfileApi'
 import { useIdentity } from '../hooks/useIdentity'
+import BottomNav from '../components/BottomNav'
 
 const DIET_OPTIONS: { value: DietStyle; label: string }[] = [
   { value: 'Keto', label: 'Keto' },
@@ -56,29 +57,23 @@ export default function ProfilePage() {
   )
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-6">
-      <div className="glass-surface-lg w-full max-w-md p-8 space-y-6">
+    <div className="flex min-h-screen items-center justify-center p-6 pb-24">
+      <div className="glass-modal w-full max-w-md p-8 space-y-6">
         <div className="space-y-1">
-          <button
-            onClick={() => navigate('/')}
-            className="mb-2 text-sm text-glass-muted hover:text-glass-text transition-colors"
-          >
-            ← Home
-          </button>
-          <h1 className="text-display-md text-glass-text">Your profile</h1>
+          <h1 className="text-display-md text-glass-text">Your Profile</h1>
           <p className="text-body-lg text-glass-muted">{profile?.name}</p>
         </div>
 
-        <div className="space-y-2">
-          <p className="text-sm font-medium text-glass-text">Diet style</p>
+        <div className="space-y-3">
+          <span className="field-label">Diet style</span>
           <div className="space-y-2">
             {DIET_OPTIONS.map(opt => (
               <label
                 key={opt.value}
-                className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors ${
+                className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3.5 transition-colors ${
                   selectedDiet === opt.value
-                    ? 'border-brand-500 bg-brand-500/10'
-                    : 'border-glass-border bg-glass-white'
+                    ? 'border-brand-500/60 bg-brand-500/10'
+                    : 'border-white/10 bg-white/5'
                 }`}
               >
                 <input
@@ -101,19 +96,21 @@ export default function ProfilePage() {
           <button
             onClick={handleSaveDiet}
             disabled={saving || selectedDiet === profile?.dietStyle}
-            className="w-full rounded-lg bg-brand-500 px-6 py-3 font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+            className="btn-primary w-full py-3"
           >
             {saving ? 'Saving...' : 'Save changes'}
           </button>
 
           <button
             onClick={handleDeleteAccount}
-            className="w-full rounded-lg border border-red-400/50 px-6 py-3 font-medium text-red-400 transition-colors hover:bg-red-400/10"
+            className="w-full rounded-xl border border-red-400/40 px-6 py-3 font-medium text-red-400/80 text-sm transition-colors hover:bg-red-400/10 hover:text-red-400"
           >
             Delete account
           </button>
         </div>
       </div>
+
+      <BottomNav />
     </div>
   )
 }

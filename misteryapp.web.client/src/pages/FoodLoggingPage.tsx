@@ -183,7 +183,7 @@ export default function FoodLoggingPage() {
                 </div>
 
                 {analysisResult.educationText && (
-                  <p className="text-sm text-glass-muted">{analysisResult.educationText}</p>
+                  <p className="text-sm text-glass-muted leading-relaxed">{analysisResult.educationText}</p>
                 )}
 
                 {analysisResult.alternativeFoodName && (
@@ -239,7 +239,7 @@ export default function FoodLoggingPage() {
 
                 <button
                   onClick={() => navigate('/')}
-                  className="w-full py-2 rounded-lg bg-white/10 hover:bg-white/20 transition text-sm text-glass-text"
+                  className="btn-ghost w-full py-2.5"
                 >
                   Done
                 </button>
@@ -271,11 +271,11 @@ export default function FoodLoggingPage() {
 
             {/* Local preview */}
             {previewUrl && (
-              <div className="relative rounded-lg overflow-hidden">
+              <div className="relative rounded-xl overflow-hidden">
                 <img src={previewUrl} alt="Food preview" className="w-full h-48 object-cover" />
                 <button
                   onClick={handleRemovePhoto}
-                  className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded hover:bg-black/80 transition"
+                  className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-lg hover:bg-black/80 transition"
                 >
                   Remove
                 </button>
@@ -286,19 +286,19 @@ export default function FoodLoggingPage() {
             {identifying && (
               <div className="space-y-2 animate-pulse" aria-label="Identifying food">
                 <div className="h-4 bg-white/20 rounded w-1/3" />
-                <div className="h-10 bg-white/10 rounded-lg" />
+                <div className="h-10 bg-white/10 rounded-xl" />
                 <div className="h-4 bg-white/20 rounded w-1/4 mt-2" />
-                <div className="h-10 bg-white/10 rounded-lg" />
+                <div className="h-10 bg-white/10 rounded-xl" />
                 <p className="text-xs text-glass-muted text-center pt-1">Identifying food…</p>
               </div>
             )}
 
-            {/* Food name + calories fields — hidden while skeleton is shown */}
+            {/* Food name + calories fields */}
             {!identifying && (
               <>
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <label htmlFor="food-name" className="text-xs font-semibold text-white/55 uppercase tracking-wider">Food name</label>
+                    <label htmlFor="food-name" className="field-label">Food name</label>
                     {aiIdentified && (
                       <span className="text-xs text-brand-400 font-medium">AI identified — you can edit</span>
                     )}
@@ -314,7 +314,7 @@ export default function FoodLoggingPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label htmlFor="calories" className="text-xs font-semibold text-white/55 uppercase tracking-wider">
+                  <label htmlFor="calories" className="field-label">
                     Estimated calories{aiIdentified ? ' · AI estimate' : ''}
                   </label>
                   <input
@@ -337,15 +337,14 @@ export default function FoodLoggingPage() {
             <div className="flex gap-3 pt-1">
               <button
                 onClick={() => { if (previewUrl) URL.revokeObjectURL(previewUrl); navigate('/') }}
-                className="flex-1 py-3 rounded-xl border border-white/20 text-white/55 hover:bg-white/10 hover:text-white/80 hover:border-white/30 transition-all duration-200 text-sm font-medium"
+                className="btn-ghost flex-1 py-3"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSave}
                 disabled={saving || identifying}
-                className="flex-1 py-3 rounded-xl text-white font-semibold text-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ background: 'linear-gradient(to bottom, #38bdf8, #0284c7)', boxShadow: '0 4px 20px rgba(14,165,233,0.35), inset 0 1px 0 rgba(255,255,255,0.2)' }}
+                className="btn-primary flex-1 py-3"
               >
                 {saving ? 'Saving…' : 'Save'}
               </button>
