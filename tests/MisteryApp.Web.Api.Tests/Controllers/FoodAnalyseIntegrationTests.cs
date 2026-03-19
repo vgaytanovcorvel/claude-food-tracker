@@ -1,5 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -21,6 +23,12 @@ public class FoodAnalyseIntegrationTests
         false, AnalysisSeverity.Medium,
         "Rice noodles are high in net carbs, exceeding keto daily limits.",
         "Zucchini Noodles");
+
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        Converters = { new JsonStringEnumConverter() }
+    };
 
     private WebApplicationFactory<Program> factory = null!;
     private HttpClient client = null!;
@@ -63,12 +71,12 @@ public class FoodAnalyseIntegrationTests
     {
         var userResp = await client.PostAsJsonAsync("/api/users",
             new CreateUserProfileRequest("Alice", DietStyle.Keto));
-        var userBody = await userResp.Content.ReadFromJsonAsync<ApiResponse<UserProfile>>();
+        var userBody = await userResp.Content.ReadFromJsonAsync<ApiResponse<UserProfile>>(JsonOptions);
         var userId = userBody!.Data!.Id;
 
         var entryResp = await client.PostAsJsonAsync("/api/food-entries",
             new CreateFoodEntryRequest(userId, "Rice Noodles", 350, FoodEntrySource.Manual));
-        var entryBody = await entryResp.Content.ReadFromJsonAsync<ApiResponse<FoodEntry>>();
+        var entryBody = await entryResp.Content.ReadFromJsonAsync<ApiResponse<FoodEntry>>(JsonOptions);
         var entryId = entryBody!.Data!.Id;
 
         return (userId, entryId);
@@ -85,7 +93,7 @@ public class FoodAnalyseIntegrationTests
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var body = await response.Content.ReadFromJsonAsync<ApiResponse<FoodAnalysisResult>>();
+        var body = await response.Content.ReadFromJsonAsync<ApiResponse<FoodAnalysisResult>>(JsonOptions);
         body!.Success.Should().BeTrue();
         body.Data!.Compatible.Should().BeFalse();
         body.Data.Severity.Should().Be(AnalysisSeverity.Medium);

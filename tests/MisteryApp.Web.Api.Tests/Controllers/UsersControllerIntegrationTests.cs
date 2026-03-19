@@ -1,5 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +17,12 @@ namespace MisteryApp.Web.Api.Tests.Controllers;
 [TestClass]
 public class UsersControllerIntegrationTests
 {
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        Converters = { new JsonStringEnumConverter() }
+    };
+
     private WebApplicationFactory<Program> factory = null!;
     private HttpClient client = null!;
 
@@ -64,7 +72,7 @@ public class UsersControllerIntegrationTests
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Created);
-        var body = await response.Content.ReadFromJsonAsync<ApiResponse<UserProfile>>();
+        var body = await response.Content.ReadFromJsonAsync<ApiResponse<UserProfile>>(JsonOptions);
         body!.Success.Should().BeTrue();
         body.Data!.Name.Should().Be("Alice");
         body.Data.DietStyle.Should().Be(DietStyle.Keto);
@@ -76,7 +84,7 @@ public class UsersControllerIntegrationTests
         // Arrange — create a user first
         var createResponse = await client.PostAsJsonAsync("/api/users",
             new CreateUserProfileRequest("Bob", DietStyle.LowFat));
-        var created = await createResponse.Content.ReadFromJsonAsync<ApiResponse<UserProfile>>();
+        var created = await createResponse.Content.ReadFromJsonAsync<ApiResponse<UserProfile>>(JsonOptions);
         var userId = created!.Data!.Id;
 
         // Act
@@ -84,7 +92,7 @@ public class UsersControllerIntegrationTests
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var body = await response.Content.ReadFromJsonAsync<ApiResponse<UserProfile>>();
+        var body = await response.Content.ReadFromJsonAsync<ApiResponse<UserProfile>>(JsonOptions);
         body!.Data!.Id.Should().Be(userId);
         body.Data.Name.Should().Be("Bob");
     }
@@ -105,7 +113,7 @@ public class UsersControllerIntegrationTests
         // Arrange
         var createResponse = await client.PostAsJsonAsync("/api/users",
             new CreateUserProfileRequest("Carol", DietStyle.Keto));
-        var created = await createResponse.Content.ReadFromJsonAsync<ApiResponse<UserProfile>>();
+        var created = await createResponse.Content.ReadFromJsonAsync<ApiResponse<UserProfile>>(JsonOptions);
         var userId = created!.Data!.Id;
 
         // Act
@@ -114,7 +122,7 @@ public class UsersControllerIntegrationTests
 
         // Assert
         updateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var body = await updateResponse.Content.ReadFromJsonAsync<ApiResponse<UserProfile>>();
+        var body = await updateResponse.Content.ReadFromJsonAsync<ApiResponse<UserProfile>>(JsonOptions);
         body!.Data!.DietStyle.Should().Be(DietStyle.Mediterranean);
     }
 
@@ -124,7 +132,7 @@ public class UsersControllerIntegrationTests
         // Arrange
         var createResponse = await client.PostAsJsonAsync("/api/users",
             new CreateUserProfileRequest("Dave", DietStyle.Keto));
-        var created = await createResponse.Content.ReadFromJsonAsync<ApiResponse<UserProfile>>();
+        var created = await createResponse.Content.ReadFromJsonAsync<ApiResponse<UserProfile>>(JsonOptions);
         var userId = created!.Data!.Id;
 
         // Act

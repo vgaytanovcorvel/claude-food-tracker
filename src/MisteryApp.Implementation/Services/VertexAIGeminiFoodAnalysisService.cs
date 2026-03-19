@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using Google.Apis.Auth.OAuth2;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.Google;
 using MisteryApp.Abstractions.Enums;
 using MisteryApp.Abstractions.Interfaces;
 using MisteryApp.Abstractions.Models;
@@ -58,8 +59,11 @@ public class VertexAIGeminiFoodAnalysisService : IFoodAnalysisService
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             cts.CancelAfter(TimeSpan.FromSeconds(_opts.TimeoutSeconds));
 
-            var result = await _kernel.InvokePromptAsync(prompt, cancellationToken: cts.Token);
-            return ParseAnalysisResponse(result.ToString());
+            var settings = new GeminiPromptExecutionSettings { MaxTokens = 1024 };
+            var args = new KernelArguments(settings);
+            var result = await _kernel.InvokePromptAsync(prompt, args, cancellationToken: cts.Token);
+            var text = result.GetValue<string>() ?? result.ToString() ?? string.Empty;
+            return ParseAnalysisResponse(text);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {

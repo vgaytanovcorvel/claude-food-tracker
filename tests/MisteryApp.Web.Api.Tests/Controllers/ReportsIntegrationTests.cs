@@ -1,5 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +17,12 @@ namespace MisteryApp.Web.Api.Tests.Controllers;
 [TestClass]
 public class ReportsIntegrationTests
 {
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        Converters = { new JsonStringEnumConverter() }
+    };
+
     private WebApplicationFactory<Program> factory = null!;
     private HttpClient client = null!;
 
@@ -50,7 +58,7 @@ public class ReportsIntegrationTests
     {
         var resp = await client.PostAsJsonAsync("/api/users",
             new CreateUserProfileRequest("Alice", DietStyle.Keto));
-        var body = await resp.Content.ReadFromJsonAsync<ApiResponse<UserProfile>>();
+        var body = await resp.Content.ReadFromJsonAsync<ApiResponse<UserProfile>>(JsonOptions);
         return body!.Data!.Id;
     }
 
@@ -66,7 +74,7 @@ public class ReportsIntegrationTests
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var body = await response.Content.ReadFromJsonAsync<ApiResponse<WeeklyReport>>();
+        var body = await response.Content.ReadFromJsonAsync<ApiResponse<WeeklyReport>>(JsonOptions);
         body!.Success.Should().BeTrue();
         body.Data.Should().NotBeNull();
         body.Data!.DailySummaries.Should().HaveCount(7);
@@ -98,7 +106,7 @@ public class ReportsIntegrationTests
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var body = await response.Content.ReadFromJsonAsync<ApiResponse<MonthlyReport>>();
+        var body = await response.Content.ReadFromJsonAsync<ApiResponse<MonthlyReport>>(JsonOptions);
         body!.Success.Should().BeTrue();
         body.Data.Should().NotBeNull();
         body.Data!.DailySummaries.Count.Should().BeGreaterThan(27);

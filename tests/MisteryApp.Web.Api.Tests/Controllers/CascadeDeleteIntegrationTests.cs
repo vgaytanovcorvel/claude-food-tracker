@@ -1,5 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
@@ -16,6 +18,12 @@ namespace MisteryApp.Web.Api.Tests.Controllers;
 [TestClass]
 public class CascadeDeleteIntegrationTests
 {
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        Converters = { new JsonStringEnumConverter() }
+    };
+
     private SqliteConnection sqliteConnection = null!;
     private WebApplicationFactory<Program> factory = null!;
     private HttpClient client = null!;
@@ -69,7 +77,7 @@ public class CascadeDeleteIntegrationTests
         // Arrange — create user
         var userResp = await client.PostAsJsonAsync("/api/users",
             new CreateUserProfileRequest("Frank", DietStyle.LowFat));
-        var userBody = await userResp.Content.ReadFromJsonAsync<ApiResponse<UserProfile>>();
+        var userBody = await userResp.Content.ReadFromJsonAsync<ApiResponse<UserProfile>>(JsonOptions);
         var userId = userBody!.Data!.Id;
 
         // Create two food entries
@@ -81,7 +89,7 @@ public class CascadeDeleteIntegrationTests
         // Verify entries exist
         var today = DateTime.UtcNow.ToString("yyyy-MM-dd");
         var beforeResp = await client.GetAsync($"/api/food-entries?userId={userId}&date={today}");
-        var beforeBody = await beforeResp.Content.ReadFromJsonAsync<ApiResponse<List<FoodEntry>>>();
+        var beforeBody = await beforeResp.Content.ReadFromJsonAsync<ApiResponse<List<FoodEntry>>>(JsonOptions);
         beforeBody!.Data!.Should().HaveCount(2);
 
         // Act — delete the user
@@ -94,7 +102,7 @@ public class CascadeDeleteIntegrationTests
 
         // Assert — food entries are cascade-deleted (SQLite FK enforcement)
         var afterResp = await client.GetAsync($"/api/food-entries?userId={userId}&date={today}");
-        var afterBody = await afterResp.Content.ReadFromJsonAsync<ApiResponse<List<FoodEntry>>>();
+        var afterBody = await afterResp.Content.ReadFromJsonAsync<ApiResponse<List<FoodEntry>>>(JsonOptions);
         afterBody!.Data!.Should().BeEmpty();
     }
 }

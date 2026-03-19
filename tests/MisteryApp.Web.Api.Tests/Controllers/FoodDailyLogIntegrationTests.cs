@@ -1,5 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +17,12 @@ namespace MisteryApp.Web.Api.Tests.Controllers;
 [TestClass]
 public class FoodDailyLogIntegrationTests
 {
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        Converters = { new JsonStringEnumConverter() }
+    };
+
     private WebApplicationFactory<Program> factory = null!;
     private HttpClient client = null!;
 
@@ -50,12 +58,12 @@ public class FoodDailyLogIntegrationTests
     {
         var userResp = await client.PostAsJsonAsync("/api/users",
             new CreateUserProfileRequest("Alice", DietStyle.Keto));
-        var userBody = await userResp.Content.ReadFromJsonAsync<ApiResponse<UserProfile>>();
+        var userBody = await userResp.Content.ReadFromJsonAsync<ApiResponse<UserProfile>>(JsonOptions);
         var userId = userBody!.Data!.Id;
 
         var entryResp = await client.PostAsJsonAsync("/api/food-entries",
             new CreateFoodEntryRequest(userId, "Eggs", 200, FoodEntrySource.Manual));
-        var entryBody = await entryResp.Content.ReadFromJsonAsync<ApiResponse<FoodEntry>>();
+        var entryBody = await entryResp.Content.ReadFromJsonAsync<ApiResponse<FoodEntry>>(JsonOptions);
         var entryId = entryBody!.Data!.Id;
 
         return (userId, entryId);
@@ -73,7 +81,7 @@ public class FoodDailyLogIntegrationTests
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var body = await response.Content.ReadFromJsonAsync<ApiResponse<List<FoodEntry>>>();
+        var body = await response.Content.ReadFromJsonAsync<ApiResponse<List<FoodEntry>>>(JsonOptions);
         body!.Success.Should().BeTrue();
         body.Data.Should().NotBeNull();
         body.Data!.Should().HaveCount(1);
@@ -86,7 +94,7 @@ public class FoodDailyLogIntegrationTests
         // Arrange
         var userResp = await client.PostAsJsonAsync("/api/users",
             new CreateUserProfileRequest("Bob", DietStyle.Mediterranean));
-        var userBody = await userResp.Content.ReadFromJsonAsync<ApiResponse<UserProfile>>();
+        var userBody = await userResp.Content.ReadFromJsonAsync<ApiResponse<UserProfile>>(JsonOptions);
         var userId = userBody!.Data!.Id;
 
         // Act — query a date in the past with no entries
@@ -94,7 +102,7 @@ public class FoodDailyLogIntegrationTests
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var body = await response.Content.ReadFromJsonAsync<ApiResponse<List<FoodEntry>>>();
+        var body = await response.Content.ReadFromJsonAsync<ApiResponse<List<FoodEntry>>>(JsonOptions);
         body!.Success.Should().BeTrue();
         body.Data.Should().NotBeNull();
         body.Data!.Should().BeEmpty();
@@ -112,7 +120,7 @@ public class FoodDailyLogIntegrationTests
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var body = await response.Content.ReadFromJsonAsync<ApiResponse<DailyLogSummary>>();
+        var body = await response.Content.ReadFromJsonAsync<ApiResponse<DailyLogSummary>>(JsonOptions);
         body!.Success.Should().BeTrue();
         body.Data.Should().NotBeNull();
         body.Data!.TotalCalories.Should().Be(200);

@@ -1,5 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +17,12 @@ namespace MisteryApp.Web.Api.Tests.Controllers;
 [TestClass]
 public class FoodEntriesControllerIntegrationTests
 {
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        Converters = { new JsonStringEnumConverter() }
+    };
+
     private WebApplicationFactory<Program> factory = null!;
     private HttpClient client = null!;
 
@@ -56,7 +64,7 @@ public class FoodEntriesControllerIntegrationTests
     {
         var response = await client.PostAsJsonAsync("/api/users",
             new CreateUserProfileRequest("Alice", DietStyle.Keto));
-        var body = await response.Content.ReadFromJsonAsync<ApiResponse<UserProfile>>();
+        var body = await response.Content.ReadFromJsonAsync<ApiResponse<UserProfile>>(JsonOptions);
         return body!.Data!.Id;
     }
 
@@ -72,7 +80,7 @@ public class FoodEntriesControllerIntegrationTests
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Created);
-        var body = await response.Content.ReadFromJsonAsync<ApiResponse<FoodEntry>>();
+        var body = await response.Content.ReadFromJsonAsync<ApiResponse<FoodEntry>>(JsonOptions);
         body!.Success.Should().BeTrue();
         body.Data!.FoodName.Should().Be("Chicken breast");
         body.Data.EstimatedCalories.Should().Be(300);
@@ -133,7 +141,7 @@ public class FoodEntriesControllerIntegrationTests
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Created);
-        var body = await response.Content.ReadFromJsonAsync<ApiResponse<FoodEntry>>();
+        var body = await response.Content.ReadFromJsonAsync<ApiResponse<FoodEntry>>(JsonOptions);
         body!.Data!.Source.Should().Be(FoodEntrySource.Photo);
     }
 
@@ -144,7 +152,7 @@ public class FoodEntriesControllerIntegrationTests
         var userId = await CreateUserAsync();
         var createResponse = await client.PostAsJsonAsync("/api/food-entries",
             new CreateFoodEntryRequest(userId, "Salad", 120, FoodEntrySource.Manual));
-        var created = await createResponse.Content.ReadFromJsonAsync<ApiResponse<FoodEntry>>();
+        var created = await createResponse.Content.ReadFromJsonAsync<ApiResponse<FoodEntry>>(JsonOptions);
         var entryId = created!.Data!.Id;
 
         // Act

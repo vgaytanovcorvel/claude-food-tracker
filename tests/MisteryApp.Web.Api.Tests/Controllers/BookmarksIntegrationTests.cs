@@ -1,5 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +17,12 @@ namespace MisteryApp.Web.Api.Tests.Controllers;
 [TestClass]
 public class BookmarksIntegrationTests
 {
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        Converters = { new JsonStringEnumConverter() }
+    };
+
     private WebApplicationFactory<Program> factory = null!;
     private HttpClient client = null!;
 
@@ -50,7 +58,7 @@ public class BookmarksIntegrationTests
     {
         var resp = await client.PostAsJsonAsync("/api/users",
             new CreateUserProfileRequest("Bob", DietStyle.Mediterranean));
-        var body = await resp.Content.ReadFromJsonAsync<ApiResponse<UserProfile>>();
+        var body = await resp.Content.ReadFromJsonAsync<ApiResponse<UserProfile>>(JsonOptions);
         return body!.Data!.Id;
     }
 
@@ -66,7 +74,7 @@ public class BookmarksIntegrationTests
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Created);
-        var body = await response.Content.ReadFromJsonAsync<ApiResponse<AlternativeBookmark>>();
+        var body = await response.Content.ReadFromJsonAsync<ApiResponse<AlternativeBookmark>>(JsonOptions);
         body!.Success.Should().BeTrue();
         body.Data!.AlternativeFoodName.Should().Be("Flatbread with hummus");
         body.Data.UserId.Should().Be(userId);
@@ -87,7 +95,7 @@ public class BookmarksIntegrationTests
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var body = await response.Content.ReadFromJsonAsync<ApiResponse<List<AlternativeBookmark>>>();
+        var body = await response.Content.ReadFromJsonAsync<ApiResponse<List<AlternativeBookmark>>>(JsonOptions);
         body!.Success.Should().BeTrue();
         body.Data.Should().HaveCount(2);
     }
@@ -99,7 +107,7 @@ public class BookmarksIntegrationTests
         var userId = await CreateUserAsync();
         var createResp = await client.PostAsJsonAsync("/api/alternatives/bookmarks",
             new CreateBookmarkRequest(userId, "Cauli rice", null, null));
-        var createBody = await createResp.Content.ReadFromJsonAsync<ApiResponse<AlternativeBookmark>>();
+        var createBody = await createResp.Content.ReadFromJsonAsync<ApiResponse<AlternativeBookmark>>(JsonOptions);
         var bookmarkId = createBody!.Data!.Id;
 
         // Act
@@ -110,7 +118,7 @@ public class BookmarksIntegrationTests
 
         // Verify it's gone
         var listResp = await client.GetAsync($"/api/alternatives/bookmarks?userId={userId}");
-        var listBody = await listResp.Content.ReadFromJsonAsync<ApiResponse<List<AlternativeBookmark>>>();
+        var listBody = await listResp.Content.ReadFromJsonAsync<ApiResponse<List<AlternativeBookmark>>>(JsonOptions);
         listBody!.Data.Should().BeEmpty();
     }
 }
