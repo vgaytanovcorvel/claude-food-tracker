@@ -243,26 +243,35 @@ export default function DailyLogPage() {
               return (
                 <li
                   key={entry.id}
-                  className="flex items-center justify-between rounded-2xl px-5 py-4 gap-3"
+                  className="flex items-center rounded-2xl overflow-hidden gap-0"
                   style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
                 >
-                  <div className="flex flex-col gap-1.5 min-w-0">
-                    <span className="text-glass-text font-medium truncate leading-snug">
-                      {entry.foodName}
-                    </span>
-                    <span className="text-glass-muted text-xs">
-                      {entry.estimatedCalories} kcal
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    {showBadge && <SeverityBadge severity={analysis!.severity} />}
-                    <button
-                      onClick={() => handleDelete(entry.id)}
-                      className="text-white/25 hover:text-red-400 text-xs transition-colors duration-200"
-                      aria-label={`Delete ${entry.foodName}`}
-                    >
-                      Remove
-                    </button>
+                  {entry.imageBase64 && (
+                    <img
+                      src={`data:image/jpeg;base64,${entry.imageBase64}`}
+                      alt={entry.foodName}
+                      className="w-16 h-16 object-cover shrink-0"
+                    />
+                  )}
+                  <div className="flex items-center justify-between flex-1 px-4 py-4 gap-3 min-w-0">
+                    <div className="flex flex-col gap-1.5 min-w-0">
+                      <span className="text-glass-text font-medium truncate leading-snug">
+                        {entry.foodName}
+                      </span>
+                      <span className="text-glass-muted text-xs">
+                        {entry.estimatedCalories} kcal
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {showBadge && <SeverityBadge severity={analysis!.severity} />}
+                      <button
+                        onClick={() => handleDelete(entry.id)}
+                        className="text-white/25 hover:text-red-400 text-xs transition-colors duration-200"
+                        aria-label={`Delete ${entry.foodName}`}
+                      >
+                        Remove
+                      </button>
+                    </div>
                   </div>
                 </li>
               )

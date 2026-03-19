@@ -30,7 +30,8 @@ public class FoodLogService(
             FoodName = request.FoodName,
             EstimatedCalories = request.EstimatedCalories,
             Source = request.Source,
-            LoggedAt = now
+            LoggedAt = now,
+            ImageBase64 = request.ImageBase64
         };
         var savedEntry = await foodLogRepository.FoodEntryAddAsync(entry, cancellationToken);
         await userProfileRepository.UserProfileUpdateLastActiveAtAsync(request.UserId, now, cancellationToken);

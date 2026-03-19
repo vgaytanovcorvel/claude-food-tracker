@@ -18,10 +18,20 @@ import {
 } from '../api/foodLogApi'
 import { createBookmark } from '../api/bookmarksApi'
 
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve((reader.result as string).split(',')[1])
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+}
+
 export default function FoodLoggingPage() {
   const { userId } = useIdentity()
   const navigate = useNavigate()
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const photoFileRef = useRef<File | null>(null)
   const identifyAbortRef = useRef<AbortController | null>(null)
   const analyseAbortRef = useRef<AbortController | null>(null)
   const imageAbortRef = useRef<AbortController | null>(null)
@@ -157,6 +167,7 @@ export default function FoodLoggingPage() {
     const file = e.target.files?.[0]
     if (!file) return
     if (previewUrl) URL.revokeObjectURL(previewUrl)
+    photoFileRef.current = file
     setPreviewUrl(URL.createObjectURL(file))
     setSource('Photo')
     setAiIdentified(false)
@@ -189,6 +200,7 @@ export default function FoodLoggingPage() {
   function handleRemovePhoto() {
     if (previewUrl) URL.revokeObjectURL(previewUrl)
     setPreviewUrl(null)
+    photoFileRef.current = null
     setSource('Manual')
     setAiIdentified(false)
     setAiCalories(0)
@@ -233,10 +245,12 @@ export default function FoodLoggingPage() {
     setSaving(true)
     setError(null)
     try {
-      const entry = await createFoodEntry(parseInt(userId, 10), foodName.trim(), calories, source)
+      const imageBase64 = photoFileRef.current ? await fileToBase64(photoFileRef.current) : null
+      const entry = await createFoodEntry(parseInt(userId, 10), foodName.trim(), calories, source, imageBase64)
       setSavedEntryId(entry.id)
       if (previewUrl) URL.revokeObjectURL(previewUrl)
       setPreviewUrl(null)
+      photoFileRef.current = null
       setSavedFoodName(foodName.trim())
       setSaving(false)
 

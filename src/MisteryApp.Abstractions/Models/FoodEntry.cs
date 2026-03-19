@@ -11,4 +11,5 @@ public class FoodEntry
     public DateTime LoggedAt { get; set; }
     public FoodEntrySource Source { get; set; }
     public string? AnalysisResult { get; set; }
+    public string? ImageBase64 { get; set; }
 }

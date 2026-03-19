@@ -6,4 +6,5 @@ public record CreateFoodEntryRequest(
     int UserId,
     string FoodName,
     int EstimatedCalories,
-    FoodEntrySource Source);
+    FoodEntrySource Source,
+    string? ImageBase64 = null);

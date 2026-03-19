@@ -10,6 +10,7 @@ export interface FoodEntry {
   loggedAt: string
   source: FoodEntrySource
   analysisResult: string | null
+  imageBase64: string | null
 }
 
 export interface FoodIdentificationResult {
@@ -62,12 +63,13 @@ export async function createFoodEntry(
   userId: number,
   foodName: string,
   estimatedCalories: number,
-  source: FoodEntrySource
+  source: FoodEntrySource,
+  imageBase64?: string | null
 ): Promise<FoodEntry> {
   const res = await fetch('/api/food-entries', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userId, foodName, estimatedCalories, source }),
+    body: JSON.stringify({ userId, foodName, estimatedCalories, source, imageBase64: imageBase64 ?? null }),
   })
   const json: ApiResponse<FoodEntry> = await res.json()
   if (!json.success || !json.data) throw new Error(json.error ?? 'Failed to save food entry')

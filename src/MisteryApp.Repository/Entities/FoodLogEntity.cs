@@ -9,6 +9,7 @@ public class FoodLogEntity
     public DateTime LoggedAt { get; set; }
     public string Source { get; set; } = string.Empty;
     public string? AnalysisResult { get; set; }
+    public string? ImageBase64 { get; set; }
 
     public UserProfileEntity UserProfile { get; set; } = null!;
 }

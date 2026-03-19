@@ -99,7 +99,8 @@ public class FoodLogRepository(IDbContextFactory<ApplicationDbContext> contextFa
             EstimatedCalories = entity.EstimatedCalories,
             LoggedAt = entity.LoggedAt,
             Source = Enum.Parse<FoodEntrySource>(entity.Source),
-            AnalysisResult = entity.AnalysisResult
+            AnalysisResult = entity.AnalysisResult,
+            ImageBase64 = entity.ImageBase64
         };
 
     private static FoodLogEntity MapToEntity(FoodEntry entry) =>
@@ -111,6 +112,7 @@ public class FoodLogRepository(IDbContextFactory<ApplicationDbContext> contextFa
             EstimatedCalories = entry.EstimatedCalories,
             LoggedAt = entry.LoggedAt,
             Source = entry.Source.ToString(),
-            AnalysisResult = entry.AnalysisResult
+            AnalysisResult = entry.AnalysisResult,
+            ImageBase64 = entry.ImageBase64
         };
 }

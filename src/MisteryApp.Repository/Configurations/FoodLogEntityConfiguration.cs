@@ -13,6 +13,7 @@ public class FoodLogEntityConfiguration : IEntityTypeConfiguration<FoodLogEntity
         builder.Property(e => e.FoodName).HasMaxLength(200).IsRequired();
         builder.Property(e => e.Source).HasMaxLength(20).IsRequired();
         builder.Property(e => e.AnalysisResult).IsRequired(false);
+        builder.Property(e => e.ImageBase64).IsRequired(false);
 
         builder.HasOne(e => e.UserProfile)
             .WithMany()
