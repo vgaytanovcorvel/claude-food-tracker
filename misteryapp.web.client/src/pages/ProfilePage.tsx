@@ -59,6 +59,12 @@ export default function ProfilePage() {
     <div className="flex min-h-screen items-center justify-center p-6">
       <div className="glass-surface-lg w-full max-w-md p-8 space-y-6">
         <div className="space-y-1">
+          <button
+            onClick={() => navigate('/')}
+            className="mb-2 text-sm text-glass-muted hover:text-glass-text transition-colors"
+          >
+            ← Home
+          </button>
           <h1 className="text-display-md text-glass-text">Your profile</h1>
           <p className="text-body-lg text-glass-muted">{profile?.name}</p>
         </div>

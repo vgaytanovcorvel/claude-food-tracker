@@ -30,24 +30,39 @@ function formatMonthYear(monthStart: string): string {
 function CalorieBarChart({ summaries }: { summaries: DailyCalorieSummary[] }) {
   const maxCalories = Math.max(...summaries.map(s => s.totalCalories), 1)
   return (
-    <div className="flex items-end gap-px h-20">
-      {summaries.map(s => {
-        const heightPct = s.hasEntries ? Math.max((s.totalCalories / maxCalories) * 100, 5) : 0
-        const barColor = !s.hasEntries
-          ? 'bg-white/10'
-          : s.conflictCount > s.onGoalCount
-            ? 'bg-amber-500/60'
-            : 'bg-brand-500/60'
-        return (
-          <div key={s.date} className="flex-1 flex flex-col justify-end">
-            <div
-              className={`w-full rounded-t-sm ${barColor}`}
-              style={{ height: `${heightPct}%` }}
-              title={s.hasEntries ? `${s.date}: ${s.totalCalories} kcal` : `${s.date}: no entries`}
-            />
-          </div>
-        )
-      })}
+    <div className="space-y-1">
+      <div className="flex items-stretch gap-px h-20">
+        {summaries.map(s => {
+          const heightPct = s.hasEntries ? Math.max((s.totalCalories / maxCalories) * 100, 5) : 0
+          const barColor = !s.hasEntries
+            ? 'bg-white/10'
+            : s.conflictCount > s.onGoalCount
+              ? 'bg-amber-500/60'
+              : 'bg-brand-500/60'
+          return (
+            <div key={s.date} className="flex-1 h-full flex flex-col justify-end">
+              <div
+                className={`w-full rounded-t-sm ${barColor}`}
+                style={{ height: `${heightPct}%` }}
+                title={s.hasEntries ? `${s.date}: ${s.totalCalories} kcal` : `${s.date}: no entries`}
+              />
+            </div>
+          )
+        })}
+      </div>
+      <div className="flex gap-px">
+        {summaries.map(s => {
+          const day = Number(s.date.split('-')[2])
+          const showLabel = day === 1 || day % 5 === 0
+          return (
+            <div key={s.date} className="flex-1 text-center">
+              <span className="text-glass-muted" style={{ fontSize: '9px' }}>
+                {showLabel ? day : ''}
+              </span>
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }

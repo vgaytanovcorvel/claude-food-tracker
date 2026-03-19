@@ -43,7 +43,7 @@ const SHORT_DAY = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 function CalorieBarChart({ summaries }: { summaries: DailyCalorieSummary[] }) {
   const maxCalories = Math.max(...summaries.map(s => s.totalCalories), 1)
   return (
-    <div className="flex items-end gap-1 h-24">
+    <div className="flex items-stretch gap-1 h-24">
       {summaries.map((s, i) => {
         const heightPct = s.hasEntries ? Math.max((s.totalCalories / maxCalories) * 100, 6) : 0
         const barColor = !s.hasEntries
@@ -52,7 +52,7 @@ function CalorieBarChart({ summaries }: { summaries: DailyCalorieSummary[] }) {
             ? 'bg-amber-500/60'
             : 'bg-brand-500/60'
         return (
-          <div key={s.date} className="flex-1 flex flex-col items-center justify-end gap-0.5">
+          <div key={s.date} className="flex-1 h-full flex flex-col items-center justify-end gap-0.5">
             <div
               className={`w-full rounded-t-sm transition-all ${barColor}`}
               style={{ height: `${heightPct}%` }}
