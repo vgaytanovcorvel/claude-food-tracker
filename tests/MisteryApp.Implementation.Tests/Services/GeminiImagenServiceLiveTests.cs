@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MisteryApp.Implementation.Options;
@@ -44,7 +45,7 @@ public class GeminiImagenServiceLiveTests
     public void Cleanup() => memoryCache.Dispose();
 
     private GeminiImagenService BuildService() =>
-        new(new HttpClient(), memoryCache, BuildOptions());
+        new(new HttpClient(), memoryCache, BuildOptions(), NullLogger<GeminiImagenService>.Instance);
 
     [TestMethod]
     public async Task GenerateAlternativeImageAsync_ShouldReturnRawResponse_ForDiagnostics()
@@ -83,7 +84,7 @@ public class GeminiImagenServiceLiveTests
         // Arrange
         var countingHandler = new CountingHttpMessageHandler();
         var httpClient = new HttpClient(countingHandler);
-        var service = new GeminiImagenService(httpClient, memoryCache, BuildOptions());
+        var service = new GeminiImagenService(httpClient, memoryCache, BuildOptions(), NullLogger<GeminiImagenService>.Instance);
 
         // Act — first call hits Imagen, second should be served from cache
         var result1 = await service.GenerateAlternativeImageAsync("Cauliflower Rice", 2, CancellationToken.None);

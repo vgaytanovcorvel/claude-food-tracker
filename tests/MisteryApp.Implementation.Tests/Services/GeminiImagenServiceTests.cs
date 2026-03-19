@@ -2,6 +2,7 @@ using System.Net;
 using System.Text;
 using FluentAssertions;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -15,6 +16,8 @@ public class GeminiImagenServiceTests
 {
     private IOptions<ImagenOptions> options = null!;
     private IMemoryCache memoryCache = null!;
+    // ILogger uses extension methods internally — loose mock avoids complex Log<TState> setup
+    private Mock<ILogger<GeminiImagenService>> loggerMock = new();
 
     [TestInitialize]
     public void Setup()
@@ -59,7 +62,7 @@ public class GeminiImagenServiceTests
         const string fakeBase64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJ";
         var httpClient = CreateHttpClient(HttpStatusCode.OK, BuildImagenResponse(fakeBase64, "image/png"));
         var serviceMock = new Mock<GeminiImagenService>(
-            () => new GeminiImagenService(httpClient, memoryCache, options),
+            () => new GeminiImagenService(httpClient, memoryCache, options, loggerMock.Object),
             MockBehavior.Strict);
         serviceMock
             .Setup(s => s.GenerateAlternativeImageAsync("Zucchini Noodles", 1, CancellationToken.None))
@@ -84,7 +87,7 @@ public class GeminiImagenServiceTests
         var countingHandler = new CountingFakeHttpMessageHandler(HttpStatusCode.OK, BuildImagenResponse(fakeBase64, "image/png"));
         var httpClient = new HttpClient(countingHandler) { BaseAddress = new Uri("https://generativelanguage.googleapis.com/") };
         var serviceMock = new Mock<GeminiImagenService>(
-            () => new GeminiImagenService(httpClient, memoryCache, options),
+            () => new GeminiImagenService(httpClient, memoryCache, options, loggerMock.Object),
             MockBehavior.Strict);
         serviceMock
             .Setup(s => s.GenerateAlternativeImageAsync("Avocado Toast", 1, CancellationToken.None))
@@ -108,7 +111,7 @@ public class GeminiImagenServiceTests
         // Arrange
         var httpClient = CreateHttpClient(HttpStatusCode.ServiceUnavailable, string.Empty);
         var serviceMock = new Mock<GeminiImagenService>(
-            () => new GeminiImagenService(httpClient, memoryCache, options),
+            () => new GeminiImagenService(httpClient, memoryCache, options, loggerMock.Object),
             MockBehavior.Strict);
         serviceMock
             .Setup(s => s.GenerateAlternativeImageAsync("Salmon", 1, CancellationToken.None))
@@ -139,7 +142,7 @@ public class GeminiImagenServiceTests
         var handler = new SlowFakeHttpMessageHandler(TimeSpan.FromSeconds(10));
         var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://generativelanguage.googleapis.com/") };
         var serviceMock = new Mock<GeminiImagenService>(
-            () => new GeminiImagenService(httpClient, memoryCache, slowOptions),
+            () => new GeminiImagenService(httpClient, memoryCache, slowOptions, loggerMock.Object),
             MockBehavior.Strict);
         serviceMock
             .Setup(s => s.GenerateAlternativeImageAsync("Broccoli", 1, CancellationToken.None))
@@ -162,7 +165,7 @@ public class GeminiImagenServiceTests
         const string emptyPredictionsJson = """{ "predictions": [] }""";
         var httpClient = CreateHttpClient(HttpStatusCode.OK, emptyPredictionsJson);
         var serviceMock = new Mock<GeminiImagenService>(
-            () => new GeminiImagenService(httpClient, memoryCache, options),
+            () => new GeminiImagenService(httpClient, memoryCache, options, loggerMock.Object),
             MockBehavior.Strict);
         serviceMock
             .Setup(s => s.GenerateAlternativeImageAsync("Plain Rice", 1, CancellationToken.None))

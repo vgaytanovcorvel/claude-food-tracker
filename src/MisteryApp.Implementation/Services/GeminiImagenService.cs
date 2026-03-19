@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 using Google.Apis.Auth.OAuth2;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MisteryApp.Abstractions.Interfaces;
 using MisteryApp.Abstractions.Models;
@@ -13,7 +14,8 @@ namespace MisteryApp.Implementation.Services;
 public class GeminiImagenService(
     HttpClient httpClient,
     IMemoryCache cache,
-    IOptions<ImagenOptions> options) : IAlternativeImageService
+    IOptions<ImagenOptions> options,
+    ILogger<GeminiImagenService> logger) : IAlternativeImageService
 {
     private static readonly AlternativeImageResult EmptyResult = new(null, null);
 
@@ -70,6 +72,8 @@ public class GeminiImagenService(
             var prediction = imagenResponse?.Predictions?.FirstOrDefault();
             if (prediction?.BytesBase64Encoded is null or { Length: 0 })
             {
+                logger.LogWarning("Imagen returned no image data (FoodName: {FoodName}, PredictionCount: {Count}).",
+                    foodName, imagenResponse?.Predictions?.Length ?? 0);
                 callResult = EmptyResult;
             }
             else
@@ -82,8 +86,10 @@ public class GeminiImagenService(
         {
             throw;
         }
-        catch
+        catch (Exception ex)
         {
+            logger.LogWarning("Imagen request failed, returning empty result (FoodName: {FoodName}).", foodName);
+            logger.LogDebug(ex, "Imagen exception detail.");
             callResult = EmptyResult;
         }
 
