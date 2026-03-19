@@ -344,7 +344,8 @@ export default function FoodLoggingPage() {
               <button
                 onClick={handleSave}
                 disabled={saving || identifying}
-                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-brand-500 to-brand-600 hover:from-sky-400 hover:to-brand-500 text-white font-semibold text-sm shadow-btn-brand transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 py-3 rounded-xl text-white font-semibold text-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ background: 'linear-gradient(to bottom, #38bdf8, #0284c7)', boxShadow: '0 4px 20px rgba(14,165,233,0.35), inset 0 1px 0 rgba(255,255,255,0.2)' }}
               >
                 {saving ? 'Saving…' : 'Save'}
               </button>
