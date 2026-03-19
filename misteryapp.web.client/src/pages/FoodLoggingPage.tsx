@@ -212,6 +212,10 @@ export default function FoodLoggingPage() {
   function handleFoodNameChange(value: string) {
     setFoodName(value)
     setAiIdentified(false)
+    if (!calorieUserEditedRef.current) {
+      setAiCalories(0)
+      setCalories(0)
+    }
   }
 
   function handleCaloriePillClick() {
