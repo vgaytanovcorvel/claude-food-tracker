@@ -10,6 +10,12 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.3" />
   </ItemGroup>
 
+  <ItemGroup Label="AI">
+    <PackageVersion Include="Microsoft.SemanticKernel" Version="1.30.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.Google" Version="1.30.0-alpha" />
+    <PackageVersion Include="Google.Apis.Auth" Version="1.68.0" />
+  </ItemGroup>
+
   <ItemGroup Label="Extensions">
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="9.0.3" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="9.0.3" />
