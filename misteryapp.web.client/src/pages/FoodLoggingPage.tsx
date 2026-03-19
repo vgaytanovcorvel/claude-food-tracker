@@ -255,18 +255,18 @@ export default function FoodLoggingPage() {
             <div>
               <input
                 ref={fileInputRef}
-                id="photo-input"
                 type="file"
                 accept="image/*"
                 onChange={handleFileChange}
                 className="hidden"
               />
-              <label
-                htmlFor="photo-input"
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
                 className="block w-full py-2 px-4 text-center rounded-lg border border-glass-border text-glass-muted cursor-pointer hover:bg-white/10 transition text-sm"
               >
                 {previewUrl ? 'Change photo' : 'Take or upload photo (optional)'}
-              </label>
+              </button>
             </div>
 
             {/* Local preview */}
