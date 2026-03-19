@@ -18,8 +18,7 @@ public static class ImplementationServiceCollectionExtensions
         services.AddScoped<IReportService, ReportService>();
         services.AddScoped<IAlternativeBookmarkService, AlternativeBookmarkService>();
         services.AddOptions<VisionOptions>().BindConfiguration(VisionOptions.Section);
-        services.AddHttpClient<IVisionFoodIdentificationService, GoogleVisionFoodIdentificationService>(
-            client => client.BaseAddress = new Uri("https://vision.googleapis.com/"));
+        services.AddScoped<IVisionFoodIdentificationService, VertexAIVisionFoodIdentificationService>();
         services.AddOptions<GeminiOptions>().BindConfiguration(GeminiOptions.Section);
         services.AddScoped<IFoodAnalysisService, VertexAIGeminiFoodAnalysisService>();
         services.AddOptions<ImagenOptions>().BindConfiguration(ImagenOptions.Section);
