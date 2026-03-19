@@ -24,27 +24,40 @@
   }
 
   .glass-modal {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(20, 26, 46, 0.70);
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
     border: 1px solid rgba(255, 255, 255, 0.10);
-    border-top-color: rgba(255, 255, 255, 0.20);
+    border-top-color: rgba(255, 255, 255, 0.18);
     border-radius: 1.5rem;
     box-shadow:
       0 25px 50px -12px rgba(0, 0, 0, 0.5),
-      inset 0 1px 0 rgba(255, 255, 255, 0.10);
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
   }
 
   .input-glass {
-    @apply w-full bg-white/[0.10] border border-white/[0.10] rounded-xl px-4 py-3
-           text-white placeholder:text-white/25
-           transition-all duration-200
-           focus:outline-none focus:bg-white/[0.14] focus:border-white/20;
+    @apply w-full rounded-xl px-4 py-3 text-white placeholder:text-white/25
+           transition-all duration-200 focus:outline-none;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.10);
   }
 
   .input-glass:focus {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(56, 189, 248, 0.55);
     box-shadow:
-      0 0 0 3px rgba(14, 165, 233, 0.15),
-      0 0 12px rgba(14, 165, 233, 0.30);
+      0 0 0 3px rgba(14, 165, 233, 0.12),
+      0 0 14px rgba(14, 165, 233, 0.28);
+  }
+
+  /* Hide number input spinners */
+  .input-glass[type="number"]::-webkit-inner-spin-button,
+  .input-glass[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .input-glass[type="number"] {
+    -moz-appearance: textfield;
   }
 }
