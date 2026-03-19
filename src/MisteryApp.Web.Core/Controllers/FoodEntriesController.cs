@@ -108,6 +108,19 @@ public class FoodEntriesController(
         return Ok(ApiResponse<AlternativeImageResult>.Ok(result));
     }
 
+    [HttpPost("suggest-alternative-preview")]
+    [ProducesResponseType(typeof(ApiResponse<AlternativeSuggestion>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<AlternativeSuggestion>>> SuggestAlternativePreview(
+        [FromBody] SuggestAlternativeByNameRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await foodLogService.SuggestAlternativeByNameAsync(
+            request.FoodName, request.UserId, request.ExcludedNames, cancellationToken);
+        return Ok(ApiResponse<AlternativeSuggestion>.Ok(result));
+    }
+
     [HttpPost("analyse-preview")]
     [ProducesResponseType(typeof(ApiResponse<AnalysisPreviewResult>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

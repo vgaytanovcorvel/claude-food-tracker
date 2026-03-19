@@ -3,9 +3,9 @@ using MisteryApp.Abstractions.Requests;
 
 namespace MisteryApp.Implementation.Validators;
 
-public class CreateFoodEntryRequestValidator : AbstractValidator<CreateFoodEntryRequest>
+public class SuggestAlternativeByNameRequestValidator : AbstractValidator<SuggestAlternativeByNameRequest>
 {
-    public CreateFoodEntryRequestValidator()
+    public SuggestAlternativeByNameRequestValidator()
     {
         RuleFor(x => x.UserId)
             .GreaterThan(0).WithMessage("UserId must be a positive integer.");
@@ -17,12 +17,5 @@ public class CreateFoodEntryRequestValidator : AbstractValidator<CreateFoodEntry
                 .WithMessage("Food name contains invalid characters.")
             .Must(name => !FoodNameValidationRules.ContainsBlockedKeywords(name))
                 .WithMessage("Food name contains disallowed content.");
-
-        RuleFor(x => x.EstimatedCalories)
-            .GreaterThanOrEqualTo(0).WithMessage("Estimated calories must be non-negative.")
-            .LessThanOrEqualTo(9999).WithMessage("Estimated calories must not exceed 9999.");
-
-        RuleFor(x => x.Source)
-            .IsInEnum().WithMessage("Source must be Manual or Photo.");
     }
 }

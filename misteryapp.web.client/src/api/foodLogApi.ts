@@ -223,6 +223,28 @@ export async function patchAnalysis(
   }
 }
 
+export async function suggestAlternativeByName(
+  foodName: string,
+  userId: number,
+  excludedNames: string[],
+  signal?: AbortSignal
+): Promise<AlternativeSuggestion | null> {
+  try {
+    const res = await fetch('/api/food-entries/suggest-alternative-preview', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ foodName, userId, excludedNames }),
+      signal,
+    })
+    if (!res.ok) return null
+    const json: ApiResponse<AlternativeSuggestion> = await res.json()
+    if (!json.success || !json.data) return null
+    return json.data
+  } catch {
+    return null
+  }
+}
+
 export async function getAlternativeImage(
   entryId: number,
   signal?: AbortSignal

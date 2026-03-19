@@ -10,6 +10,7 @@ import {
   getAlternativeImage,
   getImageForFoodName,
   suggestAlternative,
+  suggestAlternativeByName,
   type FoodEntrySource,
   type FoodAnalysisResult,
   type AnalysisPreviewResult,
@@ -27,6 +28,7 @@ export default function FoodLoggingPage() {
   const suggestAbortRef = useRef<AbortController | null>(null)
   const previewAbortRef = useRef<AbortController | null>(null)
   const preSaveImageAbortRef = useRef<AbortController | null>(null)
+  const preSaveSuggestAbortRef = useRef<AbortController | null>(null)
   // Signals the next foodName change should fire preview with 0 delay (high-confidence Vision)
   const immediatePreviewRef = useRef(false)
   // Tracks whether calories have been manually edited (avoids stale closure in useEffect)
@@ -39,6 +41,7 @@ export default function FoodLoggingPage() {
     suggestAbortRef.current?.abort()
     previewAbortRef.current?.abort()
     preSaveImageAbortRef.current?.abort()
+    preSaveSuggestAbortRef.current?.abort()
   }, [])
 
   // Form state
@@ -66,6 +69,14 @@ export default function FoodLoggingPage() {
   const [preSaveImage, setPreSaveImage] = useState<AlternativeImageResult | null>(null)
   const [preSaveImageLoading, setPreSaveImageLoading] = useState(false)
 
+  // Pre-save suggest another / bookmark
+  const [preSaveCurrentAlternativeName, setPreSaveCurrentAlternativeName] = useState<string | null>(null)
+  const [preSaveShownAlternatives, setPreSaveShownAlternatives] = useState<string[]>([])
+  const [preSaveSuggestClickCount, setPreSaveSuggestClickCount] = useState(0)
+  const [preSaveSuggestingAlternative, setPreSaveSuggestingAlternative] = useState(false)
+  const [preSaveBookmarkSaved, setPreSaveBookmarkSaved] = useState(false)
+  const [preSaveBookmarkSaving, setPreSaveBookmarkSaving] = useState(false)
+
   // Post-save analysis phase
   const [analysing, setAnalysing] = useState(false)
   const [analysisResult, setAnalysisResult] = useState<FoodAnalysisResult | null>(null)
@@ -87,6 +98,12 @@ export default function FoodLoggingPage() {
     setPreviewedFoodName('')
     setPreSaveImage(null)
     preSaveImageAbortRef.current?.abort()
+    setPreSaveCurrentAlternativeName(null)
+    setPreSaveShownAlternatives([])
+    setPreSaveSuggestClickCount(0)
+    setPreSaveSuggestingAlternative(false)
+    setPreSaveBookmarkSaved(false)
+    preSaveSuggestAbortRef.current?.abort()
 
     if (!userId || foodName.trim().length < 4) return
 
@@ -107,6 +124,10 @@ export default function FoodLoggingPage() {
           setCalories(result.estimatedCalories)
         }
         if (!result.compatible && result.alternativeFoodName) {
+          setPreSaveCurrentAlternativeName(result.alternativeFoodName)
+          setPreSaveShownAlternatives([result.alternativeFoodName])
+          setPreSaveSuggestClickCount(0)
+          setPreSaveBookmarkSaved(false)
           const imgAc = new AbortController()
           preSaveImageAbortRef.current = imgAc
           setPreSaveImageLoading(true)
@@ -239,18 +260,21 @@ export default function FoodLoggingPage() {
         setAnalysisResult(result)
         setAnalysing(false)
         if (!result.compatible && result.alternativeFoodName) {
-          setCurrentAlternativeName(result.alternativeFoodName)
-          setShownAlternatives([result.alternativeFoodName])
-          setSuggestClickCount(0)
+          const initialAltName = preSaveCurrentAlternativeName ?? result.alternativeFoodName
+          setCurrentAlternativeName(initialAltName)
+          setShownAlternatives(preSaveShownAlternatives.length > 0 ? preSaveShownAlternatives : [result.alternativeFoodName])
+          setSuggestClickCount(preSaveSuggestClickCount)
+          setBookmarkSaved(preSaveBookmarkSaved)
           if (preSaveImage) {
             setAlternativeImage(preSaveImage)
           } else if (preSaveImageLoading) {
-            // Keep loading indicator and transfer the in-flight request
+            // Transfer the in-flight image request to post-save state
             setLoadingImage(true)
+            preSaveImageAbortRef.current?.abort()
             preSaveImageAbortRef.current = null
             const imgAc = new AbortController()
             imageAbortRef.current = imgAc
-            getImageForFoodName(result.alternativeFoodName, parseInt(userId, 10), imgAc.signal)
+            getImageForFoodName(initialAltName, parseInt(userId, 10), imgAc.signal)
               .then(img => {
                 if (!imgAc.signal.aborted) {
                   setAlternativeImage(img)
@@ -332,6 +356,45 @@ export default function FoodLoggingPage() {
       // silent fallback — keep showing existing alternative
     } finally {
       if (!controller.signal.aborted) setSuggestingAlternative(false)
+    }
+  }
+
+  async function handlePreSaveSuggestAnother() {
+    if (!userId || !foodName.trim()) return
+    preSaveSuggestAbortRef.current?.abort()
+    const controller = new AbortController()
+    preSaveSuggestAbortRef.current = controller
+    setPreSaveSuggestingAlternative(true)
+    setPreSaveBookmarkSaved(false)
+    try {
+      const suggestion = await suggestAlternativeByName(
+        foodName.trim(),
+        parseInt(userId, 10),
+        preSaveShownAlternatives,
+        controller.signal
+      )
+      if (controller.signal.aborted || !suggestion?.foodName) return
+      const newName = suggestion.foodName
+      setPreSaveCurrentAlternativeName(newName)
+      setPreSaveShownAlternatives(prev => [...prev, newName])
+      setPreSaveSuggestClickCount(prev => prev + 1)
+      setPreSaveImage(null)
+      setPreSaveImageLoading(true)
+      preSaveImageAbortRef.current?.abort()
+      const imgAc = new AbortController()
+      preSaveImageAbortRef.current = imgAc
+      getImageForFoodName(newName, parseInt(userId, 10), imgAc.signal)
+        .then(img => {
+          if (!imgAc.signal.aborted) {
+            setPreSaveImage(img)
+            setPreSaveImageLoading(false)
+          }
+        })
+        .catch(() => { if (!imgAc.signal.aborted) setPreSaveImageLoading(false) })
+    } catch {
+      // silent fallback — keep showing existing alternative
+    } finally {
+      if (!controller.signal.aborted) setPreSaveSuggestingAlternative(false)
     }
   }
 
@@ -619,22 +682,62 @@ export default function FoodLoggingPage() {
                     )}
 
                     {!previewResult!.compatible && previewResult!.alternativeFoodName && (
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         <p className="text-xs text-glass-muted uppercase tracking-widest" style={{ fontSize: '10px' }}>Try instead</p>
-                        <span className="font-semibold" style={{ fontSize: '0.9rem', color: 'rgba(56,189,248,0.95)' }}>
-                          {previewResult!.alternativeFoodName}
-                        </span>
-                        {(preSaveImageLoading) && (
-                          <div className="animate-pulse rounded-xl overflow-hidden h-32 bg-white/10 mt-2" />
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-semibold" style={{ fontSize: '0.9rem', color: 'rgba(56,189,248,0.95)' }}>
+                            {preSaveCurrentAlternativeName ?? previewResult!.alternativeFoodName}
+                          </span>
+                          {!preSaveBookmarkSaved && (
+                            <button
+                              onClick={async () => {
+                                if (!userId) return
+                                setPreSaveBookmarkSaving(true)
+                                try {
+                                  await createBookmark(
+                                    parseInt(userId, 10),
+                                    preSaveCurrentAlternativeName ?? previewResult!.alternativeFoodName!,
+                                    preSaveImage?.imageBase64 ?? null,
+                                    preSaveImage?.mimeType ?? null
+                                  )
+                                  setPreSaveBookmarkSaved(true)
+                                } finally {
+                                  setPreSaveBookmarkSaving(false)
+                                }
+                              }}
+                              disabled={preSaveBookmarkSaving || preSaveImageLoading}
+                              className="btn-ghost text-xs px-3 py-1.5 disabled:opacity-50"
+                              style={{ border: '1px solid rgba(255,255,255,0.2)' }}
+                            >
+                              {preSaveBookmarkSaving ? 'Saving…' : 'Save for later'}
+                            </button>
+                          )}
+                          {preSaveBookmarkSaved && (
+                            <span className="text-xs text-emerald-400 font-medium">✓ Saved</span>
+                          )}
+                        </div>
+                        {preSaveImageLoading && (
+                          <div className="animate-pulse rounded-xl overflow-hidden h-32 bg-white/10" />
                         )}
                         {!preSaveImageLoading && preSaveImage?.imageBase64 && (
                           <img
                             src={`data:${preSaveImage.mimeType ?? 'image/png'};base64,${preSaveImage.imageBase64}`}
-                            alt={`Suggested alternative: ${previewResult!.alternativeFoodName}`}
-                            className="w-full rounded-xl object-cover max-h-36 mt-2"
+                            alt={`Suggested alternative: ${preSaveCurrentAlternativeName ?? previewResult!.alternativeFoodName}`}
+                            className="w-full rounded-xl object-cover max-h-36"
                           />
                         )}
-                        <p className="text-xs text-glass-muted mt-1">Save to explore more alternatives.</p>
+                        {preSaveSuggestClickCount < 3 && (
+                          <button
+                            onClick={handlePreSaveSuggestAnother}
+                            disabled={preSaveSuggestingAlternative || preSaveImageLoading}
+                            className="btn-ghost w-full py-2 text-sm disabled:opacity-50"
+                            style={{ border: '1px solid rgba(255,255,255,0.15)' }}
+                          >
+                            {preSaveSuggestingAlternative
+                              ? 'Finding another option…'
+                              : `Suggest another${preSaveSuggestClickCount > 0 ? ` (${3 - preSaveSuggestClickCount} left)` : ''}`}
+                          </button>
+                        )}
                       </div>
                     )}
                   </div>

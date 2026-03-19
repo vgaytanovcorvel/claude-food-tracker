@@ -559,4 +559,43 @@ public class FoodLogServiceTests
         alternativeImageServiceMock.VerifyAll();
         suggestAlternativeServiceMock.VerifyAll();
     }
+
+    [TestMethod]
+    public async Task SuggestAlternativeByNameAsync_ShouldReturnSuggestion_WhenUserExists()
+    {
+        // Arrange
+        var userId = 1;
+        var foodName = "Rice Noodles";
+        var excluded = new List<string> { "Zucchini Noodles" };
+        var ct = CancellationToken.None;
+        var user = new UserProfile { Id = userId, Name = "Alice", DietStyle = DietStyle.Keto };
+        var expected = new AlternativeSuggestion("Shirataki Noodles");
+
+        foodLogServiceMock
+            .Setup(s => s.SuggestAlternativeByNameAsync(foodName, userId, excluded, ct))
+            .CallBase()
+            .Verifiable(Times.Once());
+
+        userProfileRepositoryMock
+            .Setup(r => r.UserProfileSingleByIdAsync(userId, ct))
+            .ReturnsAsync(user)
+            .Verifiable(Times.Once());
+
+        suggestAlternativeServiceMock
+            .Setup(s => s.SuggestAsync(foodName, DietStyle.Keto, excluded, ct))
+            .ReturnsAsync(expected)
+            .Verifiable(Times.Once());
+
+        // Act
+        var result = await foodLogServiceMock.Object.SuggestAlternativeByNameAsync(foodName, userId, excluded, ct);
+
+        // Assert
+        result.FoodName.Should().Be("Shirataki Noodles");
+        foodLogServiceMock.VerifyAll();
+        foodLogRepositoryMock.VerifyAll();
+        userProfileRepositoryMock.VerifyAll();
+        foodAnalysisServiceMock.VerifyAll();
+        alternativeImageServiceMock.VerifyAll();
+        suggestAlternativeServiceMock.VerifyAll();
+    }
 }

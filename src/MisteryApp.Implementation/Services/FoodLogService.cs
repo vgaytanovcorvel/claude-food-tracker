@@ -109,4 +109,11 @@ public class FoodLogService(
     {
         await foodLogRepository.FoodEntryPatchAnalysisAsync(entryId, analysisResultJson, cancellationToken);
     }
+
+    public virtual async Task<AlternativeSuggestion> SuggestAlternativeByNameAsync(
+        string foodName, int userId, IReadOnlyList<string> excludedNames, CancellationToken cancellationToken)
+    {
+        var userProfile = await userProfileRepository.UserProfileSingleByIdAsync(userId, cancellationToken);
+        return await suggestAlternativeService.SuggestAsync(foodName, userProfile.DietStyle, excludedNames, cancellationToken);
+    }
 }

@@ -14,4 +14,5 @@ public interface IFoodLogService
     Task<AlternativeSuggestion> SuggestAlternativeForEntryAsync(int entryId, IReadOnlyList<string> excludedNames, CancellationToken cancellationToken);
     Task<AlternativeImageResult> GetImageForFoodNameAsync(string foodName, int userId, CancellationToken cancellationToken);
     Task PatchFoodEntryAnalysisAsync(int entryId, string analysisResultJson, CancellationToken cancellationToken);
+    Task<AlternativeSuggestion> SuggestAlternativeByNameAsync(string foodName, int userId, IReadOnlyList<string> excludedNames, CancellationToken cancellationToken);
 }
