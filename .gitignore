@@ -51,3 +51,10 @@ src/*.client/.angular/
 ## React client
 misteryapp.web.client/node_modules/
 misteryapp.web.client/dist/
+
+## Local data & tooling
+*.db
+.claude/settings.local.json
+.claude/projects/
+.claude/skills/.claude/
+.claude/skills/.playwright-mcp/
