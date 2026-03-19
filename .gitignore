@@ -47,3 +47,7 @@ Thumbs.db
 src/*.client/node_modules/
 src/*.client/dist/
 src/*.client/.angular/
+
+## React client
+misteryapp.web.client/node_modules/
+misteryapp.web.client/dist/
