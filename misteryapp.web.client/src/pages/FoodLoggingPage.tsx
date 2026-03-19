@@ -253,20 +253,18 @@ export default function FoodLoggingPage() {
           <>
             {/* Photo capture / file picker */}
             <div>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="block w-full py-2 px-4 text-center rounded-lg border border-glass-border text-glass-muted cursor-pointer hover:bg-white/10 transition text-sm"
-              >
-                {previewUrl ? 'Change photo' : 'Take or upload photo (optional)'}
-              </button>
+              <div className="relative">
+                <div className="w-full py-2 px-4 text-center rounded-lg border border-glass-border text-glass-muted text-sm">
+                  {previewUrl ? 'Change photo' : 'Take or upload photo (optional)'}
+                </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                />
+              </div>
             </div>
 
             {/* Local preview */}
