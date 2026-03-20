@@ -96,7 +96,7 @@ export default function FoodLoggingPage() {
   const [savedFoodName, setSavedFoodName] = useState('')
   const [savedEntryId, setSavedEntryId] = useState<number | null>(null)
   const [alternativeImage, setAlternativeImage] = useState<AlternativeImageResult | null>(null)
-  const [loadingImage, setLoadingImage] = useState(false)
+  const [_loadingImage, setLoadingImage] = useState(false)
   const [bookmarkSaved, setBookmarkSaved] = useState(false)
   const [bookmarkSaving, setBookmarkSaving] = useState(false)
   const [currentAlternativeName, setCurrentAlternativeName] = useState<string | null>(null)
