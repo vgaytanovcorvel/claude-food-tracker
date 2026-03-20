@@ -69,22 +69,18 @@
   gap: var(--space-2);
 }
 
+/* Base skeleton line — composed with width modifiers below */
 .skeletonLine {
+  height: var(--space-4);
   background: var(--color-border-bolder);
   border-radius: var(--radius-sm);
 }
 
 .skeletonLineShort {
-  height: var(--space-4);
-  background: var(--color-border-bolder);
-  border-radius: var(--radius-sm);
   width: var(--size-1-3);
 }
 
 .skeletonLineQuarter {
-  height: var(--space-4);
-  background: var(--color-border-bolder);
-  border-radius: var(--radius-sm);
   width: var(--size-1-4);
   margin-block-start: var(--space-1);
 }

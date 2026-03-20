@@ -84,17 +84,5 @@
 }
 
 .deleteBtn {
-  color: var(--color-text-dimmer);
-  font-size: 0.75rem;
   flex-shrink: 0;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .deleteBtn {
-    transition: color var(--duration-normal) var(--ease-out);
-  }
-}
-
-.deleteBtn:hover {
-  color: var(--color-high-badge);
 }

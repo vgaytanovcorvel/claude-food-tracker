@@ -54,9 +54,9 @@ export function PhotoCapture({
 
       {identifying && (
         <div className={clsx(s.identifyingSkeleton, 'animate-pulse')} aria-label="Identifying food">
-          <div className={clsx(s.skeletonLineShort)} />
+          <div className={clsx(s.skeletonLine, s.skeletonLineShort)} />
           <div className={s.skeletonBlock} />
-          <div className={clsx(s.skeletonLineQuarter)} />
+          <div className={clsx(s.skeletonLine, s.skeletonLineQuarter)} />
           <div className={s.skeletonBlock} />
           <p className={s.identifyingCaption}>Identifying food…</p>
         </div>

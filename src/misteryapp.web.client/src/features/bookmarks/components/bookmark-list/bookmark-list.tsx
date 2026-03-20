@@ -53,7 +53,7 @@ export function BookmarkList({ bookmarks, onDelete }: BookmarkListProps) {
           </div>
           <button
             onClick={() => onDelete(bookmark.id)}
-            className={s.deleteBtn}
+            className={`btn-delete ${s.deleteBtn}`}
             aria-label={`Remove ${bookmark.alternativeFoodName}`}
           >
             Remove

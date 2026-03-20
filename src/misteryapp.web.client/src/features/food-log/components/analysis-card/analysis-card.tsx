@@ -47,7 +47,7 @@ export function AnalysisCard({
             </span>
           ) : (
             <>
-              <span className={clsx(isHigh ? s.severityBadgeHigh : s.severityBadgeWarn)}>
+              <span className={clsx(s.severityBadge, isHigh ? s.severityBadgeHigh : s.severityBadgeWarn)}>
                 {severity}
               </span>
               <span className={s.conflictLabel}>Diet conflict detected</span>

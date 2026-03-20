@@ -35,21 +35,7 @@
 .logLink {
   padding: var(--space-2) var(--space-5);
   border-radius: var(--radius-xl);
-  color: var(--color-text-strong);
-  font-size: 0.875rem;
-  font-weight: 600;
-  background: linear-gradient(to bottom, var(--btn-primary-from), var(--btn-primary-to));
   box-shadow: var(--btn-cta-shadow);
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .logLink {
-    transition: filter var(--duration-normal) var(--ease-out);
-  }
-}
-
-.logLink:hover {
-  filter: brightness(1.1);
 }
 
 .entryItem {
@@ -105,21 +91,6 @@
   align-items: center;
   gap: var(--space-2);
   flex-shrink: 0;
-}
-
-.deleteBtn {
-  color: var(--color-text-dimmer);
-  font-size: 0.75rem;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .deleteBtn {
-    transition: color var(--duration-normal) var(--ease-out);
-  }
-}
-
-.deleteBtn:hover {
-  color: var(--color-high-badge);
 }
 
 .logAnotherLink {

@@ -191,6 +191,22 @@
     }
   }
 
+  /* ---- Destructive item button ---- */
+  .btn-delete {
+    color: var(--color-text-dimmer);
+    font-size: 0.75rem;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .btn-delete {
+      transition: color var(--duration-normal) var(--ease-out);
+    }
+  }
+
+  .btn-delete:hover {
+    color: var(--color-high-badge);
+  }
+
   /* ---- Modal sheet ---- */
   .modal-sheet {
     max-height: var(--modal-max-height);

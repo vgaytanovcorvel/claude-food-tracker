@@ -51,24 +51,21 @@
   font-size: 0.625rem;
 }
 
-.severityBadgeHigh {
+.severityBadge {
   font-size: 0.75rem;
   font-weight: 700;
   padding: var(--space-0-5) var(--space-2);
   border-radius: var(--radius-full);
   color: var(--color-text-strong);
-  background: var(--color-high-badge);
   flex-shrink: 0;
 }
 
+.severityBadgeHigh {
+  background: var(--color-high-badge);
+}
+
 .severityBadgeWarn {
-  font-size: 0.75rem;
-  font-weight: 700;
-  padding: var(--space-0-5) var(--space-2);
-  border-radius: var(--radius-full);
-  color: var(--color-text-strong);
   background: var(--color-warn-badge);
-  flex-shrink: 0;
 }
 
 .conflictLabel {

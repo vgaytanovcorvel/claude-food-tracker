@@ -30,7 +30,7 @@ export function EntryList({ entries, onDelete }: EntryListProps) {
           <p className={s.emptyTitle}>Nothing logged yet</p>
           <p className={s.emptySubtitle}>Tap Log to add your first meal today.</p>
         </div>
-        <Link to="/food-log" className={s.logLink}>
+        <Link to="/food-log" className={`btn-primary ${s.logLink}`}>
           Log Food
         </Link>
       </div>
@@ -61,7 +61,7 @@ export function EntryList({ entries, onDelete }: EntryListProps) {
                   {showBadge && <SeverityBadge severity={analysis!.severity} />}
                   <button
                     onClick={() => onDelete(entry.id)}
-                    className={s.deleteBtn}
+                    className="btn-delete"
                     aria-label={`Delete ${entry.foodName}`}
                   >
                     Remove
