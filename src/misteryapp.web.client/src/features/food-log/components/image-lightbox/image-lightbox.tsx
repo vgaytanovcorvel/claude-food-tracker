@@ -1,3 +1,5 @@
+import s from './image-lightbox.module.css'
+
 interface ImageLightboxProps {
   imageUrl: string
   onClose: () => void
@@ -6,8 +8,7 @@ interface ImageLightboxProps {
 export function ImageLightbox({ imageUrl, onClose }: ImageLightboxProps) {
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ background: 'rgba(0,0,0,0.88)' }}
+      className={`fixed inset-0 z-50 flex items-center justify-center ${s.overlay}`}
       onClick={onClose}
     >
       <img

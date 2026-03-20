@@ -1,3 +1,5 @@
+import s from './calorie-ring.module.css'
+
 const CALORIE_TARGET = 2000
 
 interface CalorieRingProps {
@@ -13,21 +15,17 @@ export function CalorieRing({ calories }: CalorieRingProps) {
   const offset = circumference * (1 - progress)
 
   return (
-    <div className="flex flex-col items-center gap-3">
+    <div className={s.root}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
         <defs>
           <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#06b6d4" />
-            <stop offset="100%" stopColor="#0ea5e9" />
+            <stop offset="0%" stopColor="var(--ring-grad-from)" />
+            <stop offset="100%" stopColor="var(--ring-grad-to)" />
           </linearGradient>
-          <filter id="ringGlow">
-            <feGaussianBlur stdDeviation="5" result="blur" />
-            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-          </filter>
         </defs>
         {/* Track */}
-        <circle cx={cx} cy={cx} r={r} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="9" />
-        {/* Progress arc */}
+        <circle cx={cx} cy={cx} r={r} fill="none" stroke="var(--ring-track)" strokeWidth="9" />
+        {/* Progress arc — strokeDashoffset is data-driven; transition + filter moved to CSS module */}
         <circle
           cx={cx} cy={cx} r={r}
           fill="none"
@@ -37,19 +35,18 @@ export function CalorieRing({ calories }: CalorieRingProps) {
           strokeDasharray={circumference}
           strokeDashoffset={offset}
           transform={`rotate(-90 ${cx} ${cx})`}
-          filter="url(#ringGlow)"
-          style={{ transition: 'stroke-dashoffset 1s cubic-bezier(0.4,0,0.2,1)', filter: 'drop-shadow(0 0 8px #22d3ee) drop-shadow(0 0 4px #06b6d4)' }}
+          className={s.progressArc}
         />
         {/* Calories */}
         <text x={cx} y={cx - 8} textAnchor="middle" dominantBaseline="central" fill="white" fontSize="32" fontWeight="800" fontFamily="Inter, sans-serif"
-          style={{ filter: 'drop-shadow(0 0 10px rgba(34,211,238,0.65))' }}>
+          className={s.calorieLabelGlow}>
           {calories}
         </text>
-        <text x={cx} y={cx + 14} textAnchor="middle" dominantBaseline="central" fill="rgba(255,255,255,0.4)" fontSize="11" fontFamily="Inter, sans-serif" letterSpacing="0.06em">
+        <text x={cx} y={cx + 14} textAnchor="middle" dominantBaseline="central" fill="var(--color-text-faint)" fontSize="11" fontFamily="Inter, sans-serif" letterSpacing="0.06em">
           / {CALORIE_TARGET} kcal
         </text>
       </svg>
-      <p className="text-xs text-white/35 uppercase" style={{ letterSpacing: '0.22em' }}>Today's Calories</p>
+      <p className={s.caption}>Today's Calories</p>
     </div>
   )
 }

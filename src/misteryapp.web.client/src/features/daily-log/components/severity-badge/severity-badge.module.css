@@ -1,0 +1,18 @@
+/* severity-badge.module.css */
+
+.badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.125rem var(--space-2);
+  border-radius: var(--radius-full);
+}
+
+.high {
+  background: var(--color-high-badge-bg);
+  color: var(--color-high-badge-text);
+}
+
+.warn {
+  background: var(--color-warn-badge-bg);
+  color: var(--color-warn-badge-text);
+}

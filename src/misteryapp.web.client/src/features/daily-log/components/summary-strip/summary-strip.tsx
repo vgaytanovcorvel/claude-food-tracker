@@ -1,3 +1,5 @@
+import s from './summary-strip.module.css'
+
 interface SummaryStripProps {
   totalCalories: number
   complianceLabel: string
@@ -5,7 +7,9 @@ interface SummaryStripProps {
 
 export function SummaryStrip({ totalCalories, complianceLabel }: SummaryStripProps) {
   return (
-    <div className="rounded-2xl p-5 space-y-1.5" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+    <div
+      className={`rounded-2xl p-5 space-y-1.5 ${s.strip}`}
+    >
       <p className="text-glass-text font-semibold text-base">
         {totalCalories} kcal total
       </p>

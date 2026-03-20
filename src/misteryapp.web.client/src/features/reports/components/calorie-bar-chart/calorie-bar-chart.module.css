@@ -1,0 +1,50 @@
+/* calorie-bar-chart.module.css */
+
+.chart {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+
+.barCol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.25rem;
+  height: 100%;
+}
+
+.bar {
+  width: 100%;
+  border-radius: 4px 4px 0 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .bar {
+    transition: height var(--duration-slow) var(--ease-out);
+  }
+}
+
+.barEmpty {
+  background: var(--bar-empty);
+}
+
+.barOk {
+  background: linear-gradient(180deg, var(--bar-ok-from) 0%, var(--bar-ok-to) 100%);
+  filter: drop-shadow(0 0 15px var(--bar-ok-glow));
+}
+
+.barWarn {
+  background: linear-gradient(to bottom, var(--bar-warn-from), var(--bar-warn-to));
+  filter: drop-shadow(0 0 15px var(--bar-warn-glow));
+}
+
+.barLabel {
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+}

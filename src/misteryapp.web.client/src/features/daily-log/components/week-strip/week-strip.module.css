@@ -1,0 +1,47 @@
+/* week-strip.module.css */
+
+.dayBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  padding: var(--space-2) 0;
+  border-radius: var(--radius-2xl);
+  font-size: 0.75rem;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  color: var(--color-text-faint);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .dayBtn {
+    transition: all var(--duration-normal) var(--ease-out);
+  }
+}
+
+.dayBtnSelected {
+  background: linear-gradient(to bottom, var(--week-day-selected-from), var(--week-day-selected-to));
+  box-shadow: var(--week-day-selected-glow);
+  color: var(--color-text-strong);
+}
+
+.dayLabel {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  font-size: 9px;
+}
+
+.dayNumber {
+  margin-top: 0.125rem;
+  font-size: 0.875rem;
+}
+
+.dayNumberSelected {
+  font-weight: 700;
+}
+
+.dayNumberNormal {
+  font-weight: 400;
+}

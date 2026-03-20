@@ -1,4 +1,6 @@
+import clsx from 'clsx'
 import { Link, useLocation } from 'react-router-dom'
+import s from './bottom-nav.module.css'
 
 const NAV_ITEMS = [
   {
@@ -64,40 +66,17 @@ export function BottomNav() {
   const { pathname } = useLocation()
 
   return (
-    <nav
-      className="fixed z-50 flex justify-around items-center px-4 py-2"
-      style={{
-        bottom: '24px',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        width: '90%',
-        maxWidth: '600px',
-        borderRadius: '999px',
-        background: 'rgba(15, 23, 42, 0.60)',
-        backdropFilter: 'blur(20px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-        border: '1px solid rgba(255,255,255,0.10)',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.2)',
-      }}
-    >
+    <nav className={s.nav}>
       {NAV_ITEMS.map(item => {
         const active = item.match(pathname)
         return (
           <Link
             key={item.to}
             to={item.to}
-            className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-full transition-all duration-200"
-            style={{
-              color: active ? '#38bdf8' : 'rgba(255,255,255,0.38)',
-              filter: active ? 'drop-shadow(0 0 8px rgba(56,189,248,0.8))' : 'none',
-              background: active ? 'rgba(56,189,248,0.08)' : 'transparent',
-            }}
+            className={clsx(s.navLink, active && s.navLinkActive)}
           >
             {item.icon}
-            <span
-              className="text-[10px] font-medium tracking-wide"
-              style={{ color: active ? '#7dd3fc' : 'rgba(255,255,255,0.38)' }}
-            >
+            <span className={clsx(s.navLabel, active && s.navLabelActive)}>
               {item.label}
             </span>
           </Link>

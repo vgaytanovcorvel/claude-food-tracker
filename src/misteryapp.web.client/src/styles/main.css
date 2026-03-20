@@ -1,0 +1,13 @@
+/**
+ * main.css — ITCSS: token import + keyframes
+ * Imported by index.css BEFORE @tailwind directives.
+ * The body gradient and @layer base rules live in index.css to stay within the Tailwind layer.
+ */
+
+@import './abstracts/_tokens.css';
+
+/* ---- Keyframes ---- */
+@keyframes fadeinup {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

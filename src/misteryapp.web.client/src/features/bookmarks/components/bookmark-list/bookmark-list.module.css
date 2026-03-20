@@ -1,0 +1,100 @@
+/* bookmark-list.module.css */
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-10) 0;
+  text-align: center;
+}
+
+.emptyIcon {
+  width: 4rem;
+  height: 4rem;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-icon-ring-bg);
+  border: 1px solid var(--color-icon-ring-border);
+}
+
+.emptyTitle {
+  color: var(--color-text-primary);
+  font-weight: 500;
+}
+
+.emptySubtitle {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  margin-top: var(--space-1);
+  line-height: 1.625;
+  max-width: 20rem;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-muted);
+}
+
+.itemThumb {
+  width: 4rem;
+  height: 4rem;
+  border-radius: var(--radius-xl);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.itemThumbPlaceholder {
+  width: 4rem;
+  height: 4rem;
+  border-radius: var(--radius-xl);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-icon-ring-bg);
+  border: 1px solid var(--color-icon-ring-border);
+}
+
+.itemContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.itemName {
+  color: var(--color-text-primary);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.375;
+}
+
+.itemDate {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  margin-top: var(--space-1);
+}
+
+.deleteBtn {
+  color: var(--color-text-dimmer);
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .deleteBtn {
+    transition: color var(--duration-normal) var(--ease-out);
+  }
+}
+
+.deleteBtn:hover {
+  color: var(--color-high-badge);
+}

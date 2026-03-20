@@ -1,0 +1,140 @@
+/* entry-list.module.css */
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-8) 0;
+  text-align: center;
+}
+
+.emptyIcon {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-icon-ring-bg);
+  border: 1px solid var(--color-icon-ring-border-lg);
+}
+
+.emptyTitle {
+  color: var(--color-text-primary);
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.emptySubtitle {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.logLink {
+  padding: var(--space-2) var(--space-5);
+  border-radius: var(--radius-xl);
+  color: var(--color-text-strong);
+  font-size: 0.875rem;
+  font-weight: 600;
+  background: linear-gradient(to bottom, var(--btn-primary-from), var(--btn-primary-to));
+  box-shadow: var(--btn-cta-shadow);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .logLink {
+    transition: filter var(--duration-normal) var(--ease-out);
+  }
+}
+
+.logLink:hover {
+  filter: brightness(1.1);
+}
+
+.entryItem {
+  display: flex;
+  align-items: center;
+  border-radius: var(--radius-2xl);
+  overflow: hidden;
+  gap: 0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-muted);
+}
+
+.entryThumb {
+  width: 4rem;
+  height: 4rem;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.entryContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1;
+  padding: var(--space-4);
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.entryMeta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.entryName {
+  color: var(--color-text-primary);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.375;
+}
+
+.entryCalories {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+}
+
+.entryActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.deleteBtn {
+  color: var(--color-text-dimmer);
+  font-size: 0.75rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .deleteBtn {
+    transition: color var(--duration-normal) var(--ease-out);
+  }
+}
+
+.deleteBtn:hover {
+  color: var(--color-high-badge);
+}
+
+.logAnotherLink {
+  display: inline-block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-alt-text);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .logAnotherLink {
+    transition: color var(--duration-normal) var(--ease-out);
+  }
+}
+
+.logAnotherLink:hover {
+  color: var(--color-brand);
+}

@@ -1,3 +1,5 @@
+import s from './calorie-pill.module.css'
+
 interface CaloriePillProps {
   calories: number
   calorieUserEdited: boolean
@@ -38,13 +40,12 @@ export function CaloriePill({
         <button
           type="button"
           onClick={onPillClick}
-          className="w-full text-left px-4 py-2.5 rounded-xl transition-colors"
-          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)' }}
+          className={s.pillButton}
         >
           {calories > 0 ? (
-            <span className="text-sm font-medium text-white">{!calorieUserEdited && '~'}{calories} kcal</span>
+            <span className={s.pillValue}>{!calorieUserEdited && '~'}{calories} kcal</span>
           ) : (
-            <span className="text-sm text-glass-muted">Tap to set calories</span>
+            <span className={s.pillPlaceholder}>Tap to set calories</span>
           )}
         </button>
       )}

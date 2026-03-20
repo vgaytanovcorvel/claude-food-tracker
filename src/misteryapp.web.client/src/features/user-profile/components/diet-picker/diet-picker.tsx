@@ -1,4 +1,6 @@
+import clsx from 'clsx'
 import type { DietStyle } from '../../../../domain/models'
+import s from './diet-picker.module.css'
 
 interface DietPickerOption {
   value: DietStyle
@@ -18,11 +20,7 @@ export function DietPicker({ value, onChange, options }: DietPickerProps) {
       {options.map(opt => (
         <label
           key={opt.value}
-          className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3.5 transition-colors ${
-            value === opt.value
-              ? 'border-brand-500/60 bg-brand-500/10'
-              : 'border-white/10 bg-white/5'
-          }`}
+          className={clsx(s.option, value === opt.value && s.optionSelected)}
         >
           <input
             type="radio"
@@ -32,9 +30,9 @@ export function DietPicker({ value, onChange, options }: DietPickerProps) {
             onChange={() => onChange(opt.value)}
             className="accent-brand-500"
           />
-          <span className="text-glass-text font-medium">{opt.label}</span>
+          <span className={s.optionLabel}>{opt.label}</span>
           {opt.description && (
-            <span className="text-glass-muted text-sm">{opt.description}</span>
+            <span className={s.optionDescription}>{opt.description}</span>
           )}
         </label>
       ))}

@@ -50,14 +50,10 @@ export function WeeklyReportPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center p-6 pb-28">
-      <div className="glass-modal w-full max-w-lg px-8 py-10 flex flex-col justify-center gap-6" style={{ minHeight: '520px' }}>
+      <div className="glass-modal w-full max-w-lg px-8 py-10 flex flex-col justify-center gap-6 min-h-[520px]">
         <div className="flex items-center justify-between">
           <h1 className="text-display-md text-glass-text">Weekly Report</h1>
-          <Link
-            to="/reports/monthly"
-            className="btn-ghost px-4 py-2 text-xs"
-            style={{ color: 'rgba(255,255,255,0.6)' }}
-          >
+          <Link to="/reports/monthly" className="btn-ghost px-4 py-2 text-xs text-white-60">
             Monthly →
           </Link>
         </div>
@@ -66,9 +62,8 @@ export function WeeklyReportPage() {
         <div className="flex items-center justify-between gap-2">
           <button
             onClick={() => setWeekStart(w => offsetWeek(w, -1))}
-            className="w-9 h-9 flex items-center justify-center rounded-xl text-white/50 hover:text-white hover:bg-white/8 transition-all duration-200 text-lg"
+            className="w-9 h-9 flex items-center justify-center rounded-xl text-white/50 hover:text-white hover:bg-white/8 transition-all duration-200 text-lg border-default"
             aria-label="Previous week"
-            style={{ border: '1px solid rgba(255,255,255,0.10)' }}
           >
             ←
           </button>
@@ -77,9 +72,8 @@ export function WeeklyReportPage() {
           </span>
           <button
             onClick={() => setWeekStart(w => offsetWeek(w, 1))}
-            className="w-9 h-9 flex items-center justify-center rounded-xl text-white/50 hover:text-white hover:bg-white/8 transition-all duration-200 text-lg"
+            className="w-9 h-9 flex items-center justify-center rounded-xl text-white/50 hover:text-white hover:bg-white/8 transition-all duration-200 text-lg border-default"
             aria-label="Next week"
-            style={{ border: '1px solid rgba(255,255,255,0.10)' }}
           >
             →
           </button>
@@ -97,13 +91,13 @@ export function WeeklyReportPage() {
         {!isLoading && report && (
           <>
             {/* Calorie bar chart */}
-            <div className="rounded-2xl p-5 space-y-3" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
-              <p className="text-glass-muted text-xs uppercase tracking-widest" style={{ fontSize: '10px' }}>Daily Calories</p>
+            <div className="rounded-2xl p-5 space-y-3 surface-card">
+              <p className="text-glass-muted text-[10px] uppercase tracking-widest">Daily Calories</p>
               <CalorieBarChart summaries={report.dailySummaries} labels={SHORT_DAY} />
             </div>
 
             {/* Summary row */}
-            <div className="flex items-center gap-6 rounded-2xl p-5" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+            <div className="flex items-center gap-6 rounded-2xl p-5 surface-card-raised">
               <ComplianceArc rate={report.complianceRate} />
               <div className="space-y-1.5">
                 <p className="text-glass-text font-semibold">{report.totalCalories} kcal total</p>
@@ -113,16 +107,16 @@ export function WeeklyReportPage() {
 
             {/* Pattern insight */}
             {report.patternInsight && (
-              <div className="rounded-2xl px-5 py-4 bg-amber-500/10" style={{ border: '1px solid rgba(245,158,11,0.25)' }}>
-                <p className="text-amber-300 text-sm leading-relaxed">{report.patternInsight}</p>
+              <div className="rounded-2xl px-5 py-4 insight-warn">
+                <p className="text-sm leading-relaxed text-warn-insight">{report.patternInsight}</p>
               </div>
             )}
 
             {/* Empty state */}
             {!report.dailySummaries.some(d => d.hasEntries) && (
               <div className="flex flex-col items-center gap-3 py-6 text-center">
-                <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: 'rgba(14,165,233,0.10)', border: '1px solid rgba(14,165,233,0.2)' }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(56,189,248,0.6)" strokeWidth="1.5" strokeLinecap="round">
+                <div className="w-12 h-12 rounded-full flex items-center justify-center icon-ring">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-icon-stroke)" strokeWidth="1.5" strokeLinecap="round">
                     <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="3" y1="10" x2="21" y2="10" />
                     <line x1="8" y1="2" x2="8" y2="6" /><line x1="16" y1="2" x2="16" y2="6" />
                   </svg>

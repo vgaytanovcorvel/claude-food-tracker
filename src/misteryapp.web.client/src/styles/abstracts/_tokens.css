@@ -1,0 +1,221 @@
+/**
+ * Design Token System — two-tier (primitives -> semantics)
+ * All hardcoded colour/spacing/motion values live HERE and nowhere else.
+ */
+
+:root {
+  /* --- Primitive colour palette --- */
+  --cyan-300:   #67e8f9;
+  --cyan-400:   #22d3ee;
+  --cyan-500:   #06b6d4;
+  --sky-300:    #7dd3fc;
+  --sky-400:    #38bdf8;
+  --sky-500:    #0ea5e9;
+  --sky-600:    #0284c7;
+  --sky-700:    #0369a1;
+  --sky-900:    #0c4a6e;
+
+  --emerald-300: #6ee7b7;
+  --emerald-400: #34d399;
+  --emerald-500: #10b981;
+
+  --green-300:  #86efac;
+  --green-400:  #4ade80;
+
+  --amber-300:  #fde68a;
+  --amber-400:  #fbbf24;
+  --amber-500:  #f59e0b;
+  --amber-600:  #d97706;
+
+  --red-300:    #fca5a5;
+  --red-400:    #f87171;
+  --red-500:    #ef4444;
+
+  --violet-400: #8b5cf6;
+
+  --slate-900:  #0f172a;
+  --slate-800:  #1e293b;
+  --slate-700:  #334155;
+
+  /* --- Primitive white-alpha scale --- */
+  --white-04:   rgba(255, 255, 255, 0.04);
+  --white-05:   rgba(255, 255, 255, 0.05);
+  --white-06:   rgba(255, 255, 255, 0.06);
+  --white-07:   rgba(255, 255, 255, 0.07);
+  --white-08:   rgba(255, 255, 255, 0.08);
+  --white-10:   rgba(255, 255, 255, 0.10);
+  --white-12:   rgba(255, 255, 255, 0.12);
+  --white-15:   rgba(255, 255, 255, 0.15);
+  --white-20:   rgba(255, 255, 255, 0.20);
+  --white-25:   rgba(255, 255, 255, 0.25);
+  --white-38:   rgba(255, 255, 255, 0.38);
+  --white-40:   rgba(255, 255, 255, 0.40);
+  --white-55:   rgba(255, 255, 255, 0.55);
+  --white-60:   rgba(255, 255, 255, 0.60);
+  --white-70:   rgba(255, 255, 255, 0.70);
+  --white-88:   rgba(255, 255, 255, 0.88);
+  --white-90:   rgba(255, 255, 255, 0.90);
+
+  /* --- Primitive black-alpha scale --- */
+  --black-40:   rgba(0, 0, 0, 0.40);
+  --black-60:   rgba(0, 0, 0, 0.60);
+  --black-80:   rgba(0, 0, 0, 0.80);
+
+  /* --- Primitive spacing scale (rem) --- */
+  --space-0:   0;
+  --space-1:   0.25rem;
+  --space-2:   0.5rem;
+  --space-3:   0.75rem;
+  --space-4:   1rem;
+  --space-5:   1.25rem;
+  --space-6:   1.5rem;
+  --space-8:   2rem;
+  --space-10:  2.5rem;
+
+  /* --- Primitive radius --- */
+  --radius-sm:  0.5rem;
+  --radius-md:  0.75rem;
+  --radius-lg:  1rem;
+  --radius-xl:  1.25rem;
+  --radius-2xl: 1.5rem;
+  --radius-3xl: 2rem;
+  --radius-full: 9999px;
+
+  /* --- Primitive motion --- */
+  --duration-fast:   150ms;
+  --duration-normal: 200ms;
+  --duration-slow:   600ms;
+  --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* --- Semantic — background page gradient stops --- */
+  --color-bg-page-from:   #0c4a6e;
+  --color-bg-page-mid:    #1e293b;
+  --color-bg-page-to:     #0f172a;
+  --color-bg-radial-violet: rgba(139, 92, 246, 0.22);
+  --color-bg-radial-cyan:   rgba(6, 182, 212, 0.18);
+
+  /* --- Semantic — surface (glass layers) --- */
+  --color-surface:          rgba(255, 255, 255, 0.05);
+  --color-surface-raised:   rgba(255, 255, 255, 0.04);
+  --color-surface-subtle:   rgba(255, 255, 255, 0.06);
+  --color-surface-hover:    rgba(255, 255, 255, 0.08);
+  --color-surface-strong:   rgba(255, 255, 255, 0.10);
+  --color-surface-input:    rgba(255, 255, 255, 0.08);
+  --color-surface-input-focus: rgba(255, 255, 255, 0.12);
+
+  /* --- Semantic — border --- */
+  --color-border-subtle:   rgba(255, 255, 255, 0.07);
+  --color-border-muted:    rgba(255, 255, 255, 0.08);
+  --color-border-default:  rgba(255, 255, 255, 0.10);
+  --color-border-strong:   rgba(255, 255, 255, 0.12);
+  --color-border-bright:   rgba(255, 255, 255, 0.15);
+  --color-border-bolder:   rgba(255, 255, 255, 0.20);
+
+  /* --- Semantic — brand (sky blue) --- */
+  --color-brand:             #38bdf8;
+  --color-brand-dark:        #0284c7;
+  --color-brand-glow:        rgba(14, 165, 233, 0.45);
+  --color-brand-glow-strong: rgba(14, 165, 233, 0.55);
+  --color-brand-glow-focus:  rgba(14, 165, 233, 0.28);
+  --color-brand-focus-ring:  rgba(14, 165, 233, 0.12);
+  --color-brand-bg:          rgba(56, 189, 248, 0.08);
+  --color-brand-border:      rgba(56, 189, 248, 0.55);
+  --color-brand-text:        #7dd3fc;
+
+  /* --- Semantic — text --- */
+  --color-text-primary: rgba(255, 255, 255, 0.90);
+  --color-text-strong:  #ffffff;
+  --color-text-muted:   rgba(255, 255, 255, 0.55);
+  --color-text-faint:   rgba(255, 255, 255, 0.38);
+  --color-text-dimmer:  rgba(255, 255, 255, 0.25);
+  --color-text-label:   rgba(255, 255, 255, 0.70);
+
+  /* --- Semantic — status colours --- */
+  --color-ok-bg:      rgba(16, 185, 129, 0.06);
+  --color-ok-border:  rgba(52, 211, 153, 0.35);
+  --color-ok-text:    #6ee7b7;
+  --color-ok-icon-bg: rgba(52, 211, 153, 0.20);
+
+  --color-high-bg:          rgba(239, 68, 68, 0.06);
+  --color-high-border:      rgba(239, 68, 68, 0.45);
+  --color-high-badge:       #ef4444;
+  --color-high-badge-bg:    rgba(239, 68, 68, 0.30);
+  --color-high-badge-text:  #fca5a5;
+
+  --color-warn-bg:              rgba(245, 158, 11, 0.06);
+  --color-warn-border:          rgba(251, 191, 36, 0.40);
+  --color-warn-badge:           #f59e0b;
+  --color-warn-badge-bg:        rgba(245, 158, 11, 0.30);
+  --color-warn-badge-text:      #fde68a;
+  --color-warn-insight-bg:      rgba(245, 158, 11, 0.10);
+  --color-warn-insight-border:  rgba(245, 158, 11, 0.25);
+  --color-warn-insight-text:    #fde68a;
+
+  /* --- Semantic — empty-state icon ring --- */
+  --color-icon-ring-bg:      rgba(14, 165, 233, 0.10);
+  --color-icon-ring-border:  rgba(14, 165, 233, 0.20);
+  --color-icon-ring-border-lg: rgba(14, 165, 233, 0.25);
+  --color-icon-stroke:       rgba(56, 189, 248, 0.60);
+  --color-icon-stroke-lg:    rgba(56, 189, 248, 0.70);
+
+  /* --- Semantic — alternative / suggestion text --- */
+  --color-alt-text: rgba(56, 189, 248, 0.95);
+
+  /* --- Semantic — nav bar --- */
+  --color-nav-bg:             rgba(15, 23, 42, 0.60);
+  --color-nav-border:         rgba(255, 255, 255, 0.10);
+  --color-nav-shadow:         0 8px 32px rgba(0, 0, 0, 0.40), 0 2px 8px rgba(0, 0, 0, 0.20);
+  --color-nav-active-text:    #38bdf8;
+  --color-nav-active-bg:      rgba(56, 189, 248, 0.08);
+  --color-nav-inactive-text:  rgba(255, 255, 255, 0.38);
+  --color-nav-glow:           rgba(56, 189, 248, 0.80);
+
+  /* --- Semantic — buttons --- */
+  --btn-primary-from:   #38bdf8;
+  --btn-primary-to:     #0284c7;
+  --btn-primary-shadow: 0 4px 20px rgba(14, 165, 233, 0.40), inset 0 1px 0 rgba(255, 255, 255, 0.20);
+  --btn-primary-shadow-lg: 0 10px 25px -5px rgba(14, 165, 233, 0.50), inset 0 1px 0 rgba(255, 255, 255, 0.20);
+  --btn-cta-shadow: 0 6px 16px -3px rgba(14, 165, 233, 0.45);
+
+  /* --- Semantic — glass modal --- */
+  --glass-modal-bg:         rgba(255, 255, 255, 0.05);
+  --glass-modal-border:     rgba(255, 255, 255, 0.10);
+  --glass-modal-border-top: rgba(255, 255, 255, 0.15);
+  --glass-modal-shadow:     0 25px 50px -12px rgba(0, 0, 0, 0.50), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+
+  /* --- Semantic — input --- */
+  --input-border-focus: rgba(56, 189, 248, 0.55);
+  --input-shadow-focus: 0 0 0 3px rgba(14, 165, 233, 0.12), 0 0 14px rgba(14, 165, 233, 0.28);
+
+  /* --- Semantic — calorie ring --- */
+  --ring-track:     rgba(255, 255, 255, 0.07);
+  --ring-grad-from: #06b6d4;
+  --ring-grad-to:   #0ea5e9;
+  --ring-glow-text: rgba(34, 211, 238, 0.65);
+
+  /* --- Semantic — bar chart --- */
+  --bar-empty:      rgba(255, 255, 255, 0.10);
+  --bar-ok-from:    #38bdf8;
+  --bar-ok-to:      #0ea5e9;
+  --bar-warn-from:  #fbbf24;
+  --bar-warn-to:    #d97706;
+  --bar-ok-glow:    rgba(14, 165, 233, 0.70);
+  --bar-warn-glow:  rgba(251, 191, 36, 0.50);
+
+  /* --- Semantic — week-strip --- */
+  --week-day-selected-from: #38bdf8;
+  --week-day-selected-to:   #0284c7;
+  --week-day-selected-glow: 0 0 14px rgba(14, 165, 233, 0.55), 0 4px 10px rgba(14, 165, 233, 0.30);
+
+  /* --- Semantic — z-index --- */
+  --z-nav:   50;
+  --z-modal: 100;
+
+  /* --- Semantic — focus ring --- */
+  --color-focus-ring: rgba(14, 165, 233, 0.12);
+
+  /* --- Semantic — compliance arc glow --- */
+  --compliance-glow-ok:   rgba(74, 222, 128, 0.55);
+  --compliance-glow-warn: rgba(245, 158, 11, 0.55);
+  --compliance-glow-low:  rgba(248, 113, 113, 0.55);
+}

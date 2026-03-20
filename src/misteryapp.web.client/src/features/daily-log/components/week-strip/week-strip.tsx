@@ -1,3 +1,6 @@
+import clsx from 'clsx'
+import s from './week-strip.module.css'
+
 const DAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 
 function getWeekDays(dateStr: string): string[] {
@@ -30,26 +33,12 @@ export function WeekStrip({ date, onDateChange }: WeekStripProps) {
           <button
             key={day}
             onClick={() => onDateChange(day)}
-            className="flex flex-col items-center flex-1 py-2 rounded-2xl text-xs transition-all duration-200"
-            style={
-              isSelected
-                ? {
-                    background: 'linear-gradient(to bottom, #38bdf8, #0284c7)',
-                    boxShadow: '0 0 14px rgba(14,165,233,0.55), 0 4px 10px rgba(14,165,233,0.3)',
-                    color: 'white',
-                  }
-                : {
-                    color: 'rgba(255,255,255,0.38)',
-                    background: 'transparent',
-                  }
-            }
+            className={clsx(s.dayBtn, isSelected && s.dayBtnSelected)}
             aria-label={day}
             aria-pressed={isSelected}
           >
-            <span className="font-semibold uppercase tracking-widest" style={{ fontSize: '9px' }}>
-              {DAY_LABELS[i]}
-            </span>
-            <span className={`mt-0.5 font-${isSelected ? 'bold' : 'normal'} text-sm`}>
+            <span className={s.dayLabel}>{DAY_LABELS[i]}</span>
+            <span className={clsx(s.dayNumber, isSelected ? s.dayNumberSelected : s.dayNumberNormal)}>
               {day.split('-')[2]}
             </span>
           </button>

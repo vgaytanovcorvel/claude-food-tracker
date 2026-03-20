@@ -1,0 +1,5 @@
+/* image-lightbox.module.css */
+
+.overlay {
+  background: var(--black-80);
+}

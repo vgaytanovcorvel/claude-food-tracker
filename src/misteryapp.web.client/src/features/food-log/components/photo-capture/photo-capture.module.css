@@ -1,0 +1,103 @@
+/* photo-capture.module.css */
+
+.dropzone {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-xl);
+  border: 2px dashed var(--color-border-bolder);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  color: var(--color-text-faint);
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .dropzone {
+    transition: border-color var(--duration-normal) var(--ease-out), color var(--duration-normal) var(--ease-out);
+  }
+}
+
+.dropzone:hover {
+  border-color: var(--color-brand-border);
+  color: var(--white-60);
+}
+
+.dropzoneLabel {
+  font-size: 0.875rem;
+}
+
+.previewWrap {
+  position: relative;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+
+.previewImage {
+  max-height: 180px;
+  width: 100%;
+  object-fit: cover;
+  cursor: pointer;
+  display: block;
+}
+
+.removeBtn {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  background: var(--black-60);
+  color: var(--color-text-strong);
+  font-size: 0.75rem;
+  padding: 0.25rem var(--space-2);
+  border-radius: var(--radius-lg);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .removeBtn {
+    transition: background var(--duration-normal);
+  }
+}
+
+.removeBtn:hover {
+  background: var(--black-80);
+}
+
+.identifyingSkeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.skeletonLine {
+  background: var(--color-border-bolder);
+  border-radius: var(--radius-sm);
+}
+
+.skeletonLineShort {
+  height: 1rem;
+  background: var(--color-border-bolder);
+  border-radius: var(--radius-sm);
+  width: 33%;
+}
+
+.skeletonLineQuarter {
+  height: 1rem;
+  background: var(--color-border-bolder);
+  border-radius: var(--radius-sm);
+  width: 25%;
+  margin-top: var(--space-1);
+}
+
+.skeletonBlock {
+  height: 2.5rem;
+  background: var(--color-surface-strong);
+  border-radius: var(--radius-xl);
+}
+
+.identifyingCaption {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  text-align: center;
+  padding-top: var(--space-1);
+}

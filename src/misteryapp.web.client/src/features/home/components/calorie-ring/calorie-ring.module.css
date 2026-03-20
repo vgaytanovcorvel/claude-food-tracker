@@ -1,0 +1,29 @@
+/* calorie-ring.module.css */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.caption {
+  font-size: 0.75rem;
+  color: var(--color-text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+}
+
+.progressArc {
+  filter: drop-shadow(0 0 8px var(--ring-grad-from)) drop-shadow(0 0 4px var(--cyan-500));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .progressArc {
+    transition: stroke-dashoffset 1s var(--ease-out);
+  }
+}
+
+.calorieLabelGlow {
+  filter: drop-shadow(0 0 10px var(--ring-glow-text));
+}

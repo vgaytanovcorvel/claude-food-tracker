@@ -57,18 +57,16 @@ export function DailyLogPage() {
         <div className="flex items-center justify-between gap-2">
           <button
             onClick={() => setDate(d => offsetDate(d, -1))}
-            className="w-9 h-9 flex items-center justify-center rounded-xl text-white/50 hover:text-white hover:bg-white/8 transition-all duration-200 text-lg"
+            className="w-9 h-9 flex items-center justify-center rounded-xl text-white/50 hover:text-white hover:bg-white/8 transition-all duration-200 text-lg border-default"
             aria-label="Previous day"
-            style={{ border: '1px solid rgba(255,255,255,0.10)' }}
           >
             ←
           </button>
           <span className="text-glass-text font-semibold">{formatDate(date)}</span>
           <button
             onClick={() => setDate(d => offsetDate(d, 1))}
-            className="w-9 h-9 flex items-center justify-center rounded-xl text-white/50 hover:text-white hover:bg-white/8 transition-all duration-200 text-lg"
+            className="w-9 h-9 flex items-center justify-center rounded-xl text-white/50 hover:text-white hover:bg-white/8 transition-all duration-200 text-lg border-default"
             aria-label="Next day"
-            style={{ border: '1px solid rgba(255,255,255,0.10)' }}
           >
             →
           </button>

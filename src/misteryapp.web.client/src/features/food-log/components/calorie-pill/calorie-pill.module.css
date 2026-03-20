@@ -1,0 +1,32 @@
+/* calorie-pill.module.css */
+
+.pillButton {
+  width: 100%;
+  text-align: left;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface-subtle);
+  border: 1px solid var(--color-border-strong);
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .pillButton {
+    transition: background var(--duration-normal) var(--ease-out), border-color var(--duration-normal) var(--ease-out);
+  }
+}
+
+.pillButton:hover {
+  background: var(--color-surface-hover);
+}
+
+.pillValue {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-strong);
+}
+
+.pillPlaceholder {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}

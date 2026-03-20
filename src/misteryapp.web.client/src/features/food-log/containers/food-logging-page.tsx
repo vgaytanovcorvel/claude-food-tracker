@@ -12,7 +12,10 @@ export default function FoodLoggingPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
-      <div className="glass-modal w-full max-w-md flex flex-col overflow-hidden" style={{ maxHeight: 'calc(100dvh - 2rem)' }}>
+      <div
+        className="glass-modal w-full max-w-md flex flex-col overflow-hidden"
+        style={{ maxHeight: 'calc(100dvh - 2rem)' }}
+      >
         <div className="px-6 pt-5 pb-3 shrink-0">
           <h1 className="text-display-md text-white font-bold tracking-tight">Log Food</h1>
         </div>
@@ -98,7 +101,7 @@ export default function FoodLoggingPage() {
             </>
           )}
         </div>
-        <div className="px-6 py-4 shrink-0" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+        <div className="px-6 py-4 shrink-0 border-t border-[var(--color-border-muted)]">
           {form.showAnalysisPhase && form.analysisResult && (
             <button onClick={() => navigate('/')} className="btn-primary w-full py-3">Done</button>
           )}
