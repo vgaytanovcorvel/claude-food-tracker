@@ -20,7 +20,7 @@
 
 @media (prefers-reduced-motion: no-preference) {
   .progressArc {
-    transition: stroke-dashoffset 1s var(--ease-out);
+    transition: stroke-dashoffset var(--duration-deliberate) var(--ease-out);
   }
 }
 

@@ -10,8 +10,8 @@
 }
 
 .emptyIcon {
-  width: 4rem;
-  height: 4rem;
+  width: var(--space-16);
+  height: var(--space-16);
   border-radius: var(--radius-full);
   display: flex;
   align-items: center;
@@ -28,9 +28,9 @@
 .emptySubtitle {
   color: var(--color-text-muted);
   font-size: 0.875rem;
-  margin-top: var(--space-1);
+  margin-block-start: var(--space-1);
   line-height: 1.625;
-  max-width: 20rem;
+  max-width: var(--width-empty-label);
 }
 
 .item {
@@ -44,16 +44,16 @@
 }
 
 .itemThumb {
-  width: 4rem;
-  height: 4rem;
+  width: var(--space-16);
+  height: var(--space-16);
   border-radius: var(--radius-xl);
   object-fit: cover;
   flex-shrink: 0;
 }
 
 .itemThumbPlaceholder {
-  width: 4rem;
-  height: 4rem;
+  width: var(--space-16);
+  height: var(--space-16);
   border-radius: var(--radius-xl);
   flex-shrink: 0;
   display: flex;
@@ -80,7 +80,7 @@
 .itemDate {
   color: var(--color-text-muted);
   font-size: 0.75rem;
-  margin-top: var(--space-1);
+  margin-block-start: var(--space-1);
 }
 
 .deleteBtn {

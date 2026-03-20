@@ -10,8 +10,8 @@
 }
 
 .emptyIcon {
-  width: 3.5rem;
-  height: 3.5rem;
+  width: var(--space-14);
+  height: var(--space-14);
   border-radius: var(--radius-full);
   display: flex;
   align-items: center;
@@ -29,7 +29,7 @@
 .emptySubtitle {
   color: var(--color-text-muted);
   font-size: 0.75rem;
-  margin-top: 0.25rem;
+  margin-block-start: var(--space-1);
 }
 
 .logLink {
@@ -63,8 +63,8 @@
 }
 
 .entryThumb {
-  width: 4rem;
-  height: 4rem;
+  width: var(--space-16);
+  height: var(--space-16);
   object-fit: cover;
   flex-shrink: 0;
 }

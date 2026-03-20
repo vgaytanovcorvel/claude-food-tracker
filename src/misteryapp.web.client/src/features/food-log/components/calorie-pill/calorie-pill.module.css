@@ -1,8 +1,8 @@
 /* calorie-pill.module.css */
 
 .pillButton {
-  width: 100%;
-  text-align: left;
+  width: var(--size-full);
+  text-align: start;
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-xl);
   background: var(--color-surface-subtle);

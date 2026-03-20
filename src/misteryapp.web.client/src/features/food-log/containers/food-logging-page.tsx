@@ -13,8 +13,7 @@ export default function FoodLoggingPage() {
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
       <div
-        className="glass-modal w-full max-w-md flex flex-col overflow-hidden"
-        style={{ maxHeight: 'calc(100dvh - 2rem)' }}
+        className="glass-modal modal-sheet w-full max-w-md flex flex-col overflow-hidden"
       >
         <div className="px-6 pt-5 pb-3 shrink-0">
           <h1 className="text-display-md text-white font-bold tracking-tight">Log Food</h1>

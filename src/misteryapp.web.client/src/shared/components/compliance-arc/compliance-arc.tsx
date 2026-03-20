@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import s from './compliance-arc.module.css'
 
 interface ComplianceArcProps {
@@ -45,9 +46,8 @@ export function ComplianceArc({ rate }: ComplianceArcProps) {
             strokeDashoffset={dashOffset}
             strokeLinecap="round"
             transform="rotate(-90 36 36)"
-            style={{
-              filter: `drop-shadow(0 0 8px ${glowColor}) drop-shadow(0 0 20px ${glowColor})`,
-            }}
+            className={s.progressArc}
+            style={{ '--arc-glow': glowColor } as CSSProperties}
           />
         )}
 

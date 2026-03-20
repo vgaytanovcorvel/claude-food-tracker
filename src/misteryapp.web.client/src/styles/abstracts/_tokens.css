@@ -71,6 +71,17 @@
   --space-6:   1.5rem;
   --space-8:   2rem;
   --space-10:  2.5rem;
+  --space-14: 3.5rem;
+  --space-16: 4rem;
+  --space-18: 4.5rem;
+  --space-20: 5rem;
+  --size-full:  100%;
+  --size-half:  50%;
+  --size-1-3:   33.333%;
+  --size-1-4:   25%;
+  --space-0-5: 0.125rem;
+  --space-1-5: 0.375rem;
+  --space-3-5: 0.875rem;
 
   /* --- Primitive radius --- */
   --radius-sm:  0.5rem;
@@ -80,11 +91,13 @@
   --radius-2xl: 1.5rem;
   --radius-3xl: 2rem;
   --radius-full: 9999px;
+  --radius-xs: 0.25rem;
 
   /* --- Primitive motion --- */
   --duration-fast:   150ms;
   --duration-normal: 200ms;
   --duration-slow:   600ms;
+  --duration-deliberate: 1s;
   --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
 
   /* --- Semantic — background page gradient stops --- */
@@ -213,6 +226,13 @@
 
   /* --- Semantic — focus ring --- */
   --color-focus-ring: rgba(14, 165, 233, 0.12);
+
+  /* --- Semantic — layout sizes --- */
+  --nav-inline-size: 90%;
+  --nav-max-inline-size: 37.5rem;
+  --photo-preview-max-block-size: 11.25rem;
+  --width-empty-label: 20rem;
+  --modal-max-height: calc(100dvh - var(--space-8));
 
   /* --- Semantic — compliance arc glow --- */
   --compliance-glow-ok:   rgba(74, 222, 128, 0.55);
