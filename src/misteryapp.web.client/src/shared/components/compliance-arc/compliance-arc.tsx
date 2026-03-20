@@ -2,7 +2,7 @@ interface ComplianceArcProps {
   rate: number
 }
 
-export default function ComplianceArc({ rate }: ComplianceArcProps) {
+export function ComplianceArc({ rate }: ComplianceArcProps) {
   const radius = 28
   const circumference = 2 * Math.PI * radius
   const dashOffset = circumference * (1 - rate)

@@ -60,7 +60,7 @@ const NAV_ITEMS = [
   },
 ]
 
-export default function BottomNav() {
+export function BottomNav() {
   const { pathname } = useLocation()
 
   return (

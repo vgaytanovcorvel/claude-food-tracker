@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import type { DietStyle } from '../domain/models'
-import { useIdentity } from '../hooks/useIdentity'
-import { useProfile } from '../features/user-profile/state/use-profile'
-import { useUpdateProfile } from '../features/user-profile/state/use-update-profile'
-import { useDeleteProfile } from '../features/user-profile/state/use-delete-profile'
-import BottomNav from '../components/BottomNav'
+import type { DietStyle } from '../../../domain/models'
+import { useIdentity } from '../../../hooks/useIdentity'
+import { useProfile } from '../state/use-profile'
+import { useUpdateProfile } from '../state/use-update-profile'
+import { useDeleteProfile } from '../state/use-delete-profile'
+import { DietPicker } from '../components/diet-picker/diet-picker'
+import { BottomNav } from '../../../shared/components/bottom-nav/bottom-nav'
 
 const DIET_OPTIONS: { value: DietStyle; label: string }[] = [
   { value: 'Keto', label: 'Keto' },
@@ -13,7 +14,7 @@ const DIET_OPTIONS: { value: DietStyle; label: string }[] = [
   { value: 'Mediterranean', label: 'Mediterranean' },
 ]
 
-export default function ProfilePage() {
+export function ProfilePage() {
   const navigate = useNavigate()
   const { userId, clearIdentity } = useIdentity()
   const { data: profile, isLoading, isError } = useProfile(userId)
@@ -72,28 +73,7 @@ export default function ProfilePage() {
 
         <div className="space-y-3">
           <span className="field-label">Diet style</span>
-          <div className="space-y-2">
-            {DIET_OPTIONS.map(opt => (
-              <label
-                key={opt.value}
-                className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3.5 transition-colors ${
-                  selectedDiet === opt.value
-                    ? 'border-brand-500/60 bg-brand-500/10'
-                    : 'border-white/10 bg-white/5'
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="dietStyle"
-                  value={opt.value}
-                  checked={selectedDiet === opt.value}
-                  onChange={() => setSelectedDiet(opt.value)}
-                  className="accent-brand-500"
-                />
-                <span className="text-glass-text font-medium">{opt.label}</span>
-              </label>
-            ))}
-          </div>
+          <DietPicker value={selectedDiet} onChange={setSelectedDiet} options={DIET_OPTIONS} />
         </div>
 
         {error && <p className="text-sm text-red-400">{error}</p>}

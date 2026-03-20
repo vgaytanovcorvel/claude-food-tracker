@@ -1,11 +1,19 @@
-import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useIdentity } from '../hooks/useIdentity'
-import { useWeeklyReport } from '../features/reports/state/use-weekly-report'
-import type { DailyCalorieSummary } from '../domain/models'
-import ComplianceArc from '../components/ComplianceArc'
-import BottomNav from '../components/BottomNav'
+import { useIdentity } from '../../../hooks/useIdentity'
+import { useWeeklyReport } from '../state/use-weekly-report'
+import { CalorieBarChart } from '../components/calorie-bar-chart/calorie-bar-chart'
+import { ComplianceArc } from '../../../shared/components/compliance-arc/compliance-arc'
+import { BottomNav } from '../../../shared/components/bottom-nav/bottom-nav'
+
+const SHORT_DAY = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
+
+function toDateStr(d: Date): string {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${dd}`
+}
 
 function getMondayOfWeek(dateStr: string): string {
   const [year, month, day] = dateStr.split('-').map(Number)
@@ -13,13 +21,6 @@ function getMondayOfWeek(dateStr: string): string {
   const dow = d.getDay() === 0 ? 6 : d.getDay() - 1
   const monday = new Date(year, month - 1, day - dow)
   return toDateStr(monday)
-}
-
-function toDateStr(d: Date): string {
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const dd = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${dd}`
 }
 
 function offsetWeek(weekStart: string, weeks: number): string {
@@ -41,58 +42,11 @@ function formatDateRange(start: string, end: string): string {
   return `${fmt(start)} – ${fmt(end)}, ${y}`
 }
 
-const SHORT_DAY = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
-
-function CalorieBarChart({ summaries }: { summaries: DailyCalorieSummary[] }) {
-  const maxCalories = Math.max(...summaries.map(s => s.totalCalories), 1)
-  return (
-    <div className="flex justify-between items-end gap-1" style={{ height: '112px' }}>
-      {summaries.map((s, i) => {
-        const heightPct = s.hasEntries ? Math.max((s.totalCalories / maxCalories) * 100, 6) : 0
-        const barBackground = !s.hasEntries
-          ? 'rgba(255,255,255,0.10)'
-          : s.conflictCount > s.onGoalCount
-            ? 'linear-gradient(to bottom, #fbbf24, #d97706)'
-            : 'linear-gradient(180deg, #38bdf8 0%, #0ea5e9 100%)'
-        return (
-          <div key={s.date} className="flex-1 flex flex-col items-center justify-end gap-1" style={{ height: '100%' }}>
-            <div
-              style={{
-                width: '24px',
-                height: s.hasEntries ? `${heightPct}%` : '4px',
-                background: barBackground,
-                borderRadius: '4px 4px 0 0',
-                transition: 'height 0.6s cubic-bezier(0.4,0,0.2,1)',
-                filter: s.hasEntries
-                  ? s.conflictCount <= s.onGoalCount
-                    ? 'drop-shadow(0 0 15px rgba(14,165,233,0.7))'
-                    : 'drop-shadow(0 0 15px rgba(251,191,36,0.5))'
-                  : 'none',
-              }}
-              title={s.hasEntries ? `${s.date}: ${s.totalCalories} kcal` : `${s.date}: no entries`}
-            />
-            <span className="text-glass-muted text-xs uppercase" style={{ fontSize: '10px', letterSpacing: '0.08em' }}>
-              {SHORT_DAY[i]}
-            </span>
-          </div>
-        )
-      })}
-    </div>
-  )
-}
-
-export default function WeeklyReportPage() {
+export function WeeklyReportPage() {
   const { userId } = useIdentity()
-  const navigate = useNavigate()
   const [weekStart, setWeekStart] = useState<string>(() => getMondayOfWeek(todayString()))
 
   const { data: report, isLoading, isError } = useWeeklyReport(userId, weekStart)
-
-  useEffect(() => {
-    if (!userId) {
-      navigate('/onboarding', { replace: true })
-    }
-  }, [userId, navigate])
 
   return (
     <div className="flex min-h-screen items-center justify-center p-6 pb-28">
@@ -145,7 +99,7 @@ export default function WeeklyReportPage() {
             {/* Calorie bar chart */}
             <div className="rounded-2xl p-5 space-y-3" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
               <p className="text-glass-muted text-xs uppercase tracking-widest" style={{ fontSize: '10px' }}>Daily Calories</p>
-              <CalorieBarChart summaries={report.dailySummaries} />
+              <CalorieBarChart summaries={report.dailySummaries} labels={SHORT_DAY} />
             </div>
 
             {/* Summary row */}

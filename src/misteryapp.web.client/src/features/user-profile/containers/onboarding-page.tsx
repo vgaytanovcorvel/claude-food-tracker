@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import type { DietStyle } from '../domain/models'
-import { useIdentity } from '../hooks/useIdentity'
-import { useServices } from '../core/providers'
+import type { DietStyle } from '../../../domain/models'
+import { useIdentity } from '../../../hooks/useIdentity'
+import { useServices } from '../../../core/providers'
+import { DietPicker } from '../components/diet-picker/diet-picker'
 
 const DIET_OPTIONS: { value: DietStyle; label: string; description: string }[] = [
   { value: 'Keto', label: 'Keto', description: 'Low-carb, high-fat' },
@@ -10,7 +11,7 @@ const DIET_OPTIONS: { value: DietStyle; label: string; description: string }[] =
   { value: 'Mediterranean', label: 'Mediterranean', description: 'Balanced, plant-forward' },
 ]
 
-export default function OnboardingPage() {
+export function OnboardingPage() {
   const navigate = useNavigate()
   const { setUserId } = useIdentity()
   const { userProfileService } = useServices()
@@ -58,29 +59,7 @@ export default function OnboardingPage() {
 
           <div className="space-y-2">
             <span className="field-label">Diet style</span>
-            <div className="space-y-2">
-              {DIET_OPTIONS.map(opt => (
-                <label
-                  key={opt.value}
-                  className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3.5 transition-colors ${
-                    dietStyle === opt.value
-                      ? 'border-brand-500/60 bg-brand-500/10'
-                      : 'border-white/10 bg-white/5'
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="dietStyle"
-                    value={opt.value}
-                    checked={dietStyle === opt.value}
-                    onChange={() => setDietStyle(opt.value)}
-                    className="accent-brand-500"
-                  />
-                  <span className="text-glass-text font-medium">{opt.label}</span>
-                  <span className="text-glass-muted text-sm">{opt.description}</span>
-                </label>
-              ))}
-            </div>
+            <DietPicker value={dietStyle} onChange={setDietStyle} options={DIET_OPTIONS} />
           </div>
 
           {error && <p className="text-sm text-red-400">{error}</p>}

@@ -1,18 +1,13 @@
 import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom'
-import { useIdentity } from './hooks/useIdentity'
-import HomePage from './pages/HomePage'
-import OnboardingPage from './pages/OnboardingPage'
-import ProfilePage from './pages/ProfilePage'
-import FoodLoggingPage from './pages/FoodLoggingPage'
-import DailyLogPage from './pages/DailyLogPage'
-import WeeklyReportPage from './pages/WeeklyReportPage'
-import MonthlyReportPage from './pages/MonthlyReportPage'
-import BookmarksPage from './pages/BookmarksPage'
-
-function ProtectedRoute({ element }: { element: React.ReactElement }) {
-  const { userId } = useIdentity()
-  return userId ? element : <Navigate to="/onboarding" replace />
-}
+import { ProtectedRoute } from './core/protected-route'
+import { HomePage } from './features/home/containers/home-page'
+import { OnboardingPage } from './features/user-profile/containers/onboarding-page'
+import { ProfilePage } from './features/user-profile/containers/profile-page'
+import FoodLoggingPage from './features/food-log/containers/food-logging-page'
+import { DailyLogPage } from './features/daily-log/containers/daily-log-page'
+import { WeeklyReportPage } from './features/reports/containers/weekly-report-page'
+import { MonthlyReportPage } from './features/reports/containers/monthly-report-page'
+import { BookmarksPage } from './features/bookmarks/containers/bookmarks-page'
 
 export default function App() {
   return (
@@ -26,6 +21,7 @@ export default function App() {
         <Route path="/reports/monthly" element={<ProtectedRoute element={<MonthlyReportPage />} />} />
         <Route path="/bookmarks" element={<ProtectedRoute element={<BookmarksPage />} />} />
         <Route path="/" element={<ProtectedRoute element={<HomePage />} />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   )

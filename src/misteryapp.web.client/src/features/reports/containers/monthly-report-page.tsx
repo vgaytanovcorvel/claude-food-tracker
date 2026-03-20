@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useIdentity } from '../hooks/useIdentity'
-import { useMonthlyReport } from '../features/reports/state/use-monthly-report'
-import type { DailyCalorieSummary } from '../domain/models'
-import ComplianceArc from '../components/ComplianceArc'
-import BottomNav from '../components/BottomNav'
+import { useIdentity } from '../../../hooks/useIdentity'
+import { useMonthlyReport } from '../state/use-monthly-report'
+import { CalorieBarChart } from '../components/calorie-bar-chart/calorie-bar-chart'
+import { ComplianceArc } from '../../../shared/components/compliance-arc/compliance-arc'
+import { BottomNav } from '../../../shared/components/bottom-nav/bottom-nav'
+import type { DailyCalorieSummary } from '../../../domain/models'
 
 function toDateStr(d: Date): string {
   const y = d.getFullYear()
@@ -30,63 +30,18 @@ function formatMonthYear(monthStart: string): string {
   return new Date(year, month - 1, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
 }
 
-function CalorieBarChart({ summaries }: { summaries: DailyCalorieSummary[] }) {
-  const maxCalories = Math.max(...summaries.map(s => s.totalCalories), 1)
-  return (
-    <div className="space-y-1">
-      <div className="flex items-end gap-px" style={{ height: '88px' }}>
-        {summaries.map(s => {
-          const heightPct = s.hasEntries ? Math.max((s.totalCalories / maxCalories) * 100, 5) : 0
-          const barBackground = !s.hasEntries
-            ? 'rgba(255,255,255,0.08)'
-            : s.conflictCount > s.onGoalCount
-              ? 'linear-gradient(to bottom, #fbbf24, #d97706)'
-              : 'linear-gradient(to bottom, #7dd3fc, #0284c7)'
-          return (
-            <div key={s.date} className="flex-1 flex flex-col justify-end" style={{ height: '100%' }}>
-              <div
-                style={{
-                  width: '100%',
-                  height: s.hasEntries ? `${heightPct}%` : '3px',
-                  background: barBackground,
-                  borderRadius: '3px 3px 0 0',
-                  transition: 'height 0.5s ease',
-                }}
-                title={s.hasEntries ? `${s.date}: ${s.totalCalories} kcal` : `${s.date}: no entries`}
-              />
-            </div>
-          )
-        })}
-      </div>
-      <div className="flex gap-px">
-        {summaries.map(s => {
-          const day = Number(s.date.split('-')[2])
-          const showLabel = day === 1 || day % 5 === 0
-          return (
-            <div key={s.date} className="flex-1 text-center">
-              <span className="text-glass-muted" style={{ fontSize: '9px' }}>
-                {showLabel ? day : ''}
-              </span>
-            </div>
-          )
-        })}
-      </div>
-    </div>
-  )
+function computeDayLabels(summaries: DailyCalorieSummary[]): (string | null)[] {
+  return summaries.map(s => {
+    const day = Number(s.date.split('-')[2])
+    return day === 1 || day % 5 === 0 ? String(day) : null
+  })
 }
 
-export default function MonthlyReportPage() {
+export function MonthlyReportPage() {
   const { userId } = useIdentity()
-  const navigate = useNavigate()
   const [monthStart, setMonthStart] = useState<string>(currentMonthStart)
 
   const { data: report, isLoading, isError } = useMonthlyReport(userId, monthStart)
-
-  useEffect(() => {
-    if (!userId) {
-      navigate('/onboarding', { replace: true })
-    }
-  }, [userId, navigate])
 
   return (
     <div className="flex min-h-screen items-center justify-center p-6 pb-28">
@@ -137,7 +92,11 @@ export default function MonthlyReportPage() {
             {/* Calorie bar chart */}
             <div className="rounded-2xl p-5 space-y-3" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
               <p className="text-glass-muted text-xs uppercase tracking-widest" style={{ fontSize: '10px' }}>Daily Calories</p>
-              <CalorieBarChart summaries={report.dailySummaries} />
+              <CalorieBarChart
+                summaries={report.dailySummaries}
+                labels={computeDayLabels(report.dailySummaries)}
+                chartHeight={88}
+              />
               <p className="text-glass-muted text-xs">
                 {report.dailySummaries.length} days — gap days shown in grey
               </p>

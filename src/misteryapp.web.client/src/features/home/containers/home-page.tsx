@@ -1,10 +1,9 @@
 import { Link } from 'react-router-dom'
-import { useIdentity } from '../hooks/useIdentity'
-import { useProfile } from '../features/user-profile/state/use-profile'
-import { useDailySummary } from '../features/food-log/state/use-daily-summary'
-import BottomNav from '../components/BottomNav'
-
-const CALORIE_TARGET = 2000
+import { useIdentity } from '../../../hooks/useIdentity'
+import { useProfile } from '../../user-profile/state/use-profile'
+import { useDailySummary } from '../../food-log/state/use-daily-summary'
+import { CalorieRing } from '../components/calorie-ring/calorie-ring'
+import { BottomNav } from '../../../shared/components/bottom-nav/bottom-nav'
 
 function daysBetween(isoDateStr: string, today: Date): number {
   const [y, mo, d] = isoDateStr.split('-').map(Number)
@@ -21,72 +20,23 @@ function todayDateString(): string {
   return `${y}-${m}-${d}`
 }
 
-function CalorieRing({ calories }: { calories: number }) {
-  const r = 52
-  const size = 140
-  const cx = size / 2
-  const circumference = 2 * Math.PI * r
-  const progress = Math.min(calories / CALORIE_TARGET, 1)
-  const offset = circumference * (1 - progress)
-
-  return (
-    <div className="flex flex-col items-center gap-3">
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-        <defs>
-          <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#06b6d4" />
-            <stop offset="100%" stopColor="#0ea5e9" />
-          </linearGradient>
-          <filter id="ringGlow">
-            <feGaussianBlur stdDeviation="5" result="blur" />
-            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-          </filter>
-        </defs>
-        {/* Track */}
-        <circle cx={cx} cy={cx} r={r} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="9" />
-        {/* Progress arc */}
-        <circle
-          cx={cx} cy={cx} r={r}
-          fill="none"
-          stroke="url(#ringGrad)"
-          strokeWidth="9"
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          strokeDashoffset={offset}
-          transform={`rotate(-90 ${cx} ${cx})`}
-          filter="url(#ringGlow)"
-          style={{ transition: 'stroke-dashoffset 1s cubic-bezier(0.4,0,0.2,1)', filter: 'drop-shadow(0 0 8px #22d3ee) drop-shadow(0 0 4px #06b6d4)' }}
-        />
-        {/* Calories */}
-        <text x={cx} y={cx - 8} textAnchor="middle" dominantBaseline="central" fill="white" fontSize="32" fontWeight="800" fontFamily="Inter, sans-serif"
-          style={{ filter: 'drop-shadow(0 0 10px rgba(34,211,238,0.65))' }}>
-          {calories}
-        </text>
-        <text x={cx} y={cx + 14} textAnchor="middle" dominantBaseline="central" fill="rgba(255,255,255,0.4)" fontSize="11" fontFamily="Inter, sans-serif" letterSpacing="0.06em">
-          / {CALORIE_TARGET} kcal
-        </text>
-      </svg>
-      <p className="text-xs text-white/35 uppercase" style={{ letterSpacing: '0.22em' }}>Today's Calories</p>
-    </div>
-  )
+function deriveGreeting(profile: { lastActiveAt: string | null; createdAt: string } | null | undefined): string {
+  if (!profile) return 'Welcome back.'
+  const today = new Date()
+  const lastActive = profile.lastActiveAt
+    ? profile.lastActiveAt.slice(0, 10)
+    : profile.createdAt.slice(0, 10)
+  return daysBetween(lastActive, today) > 1 ? 'Welcome back. Ready to log?' : 'Good to see you.'
 }
 
-export default function HomePage() {
+export function HomePage() {
   const { userId } = useIdentity()
   const todayStr = todayDateString()
   const { data: profile } = useProfile(userId)
   const { data: summary } = useDailySummary(userId, todayStr)
 
   const calories = summary?.totalCalories ?? 0
-
-  const greeting = (() => {
-    if (!profile) return 'Welcome back.'
-    const today = new Date()
-    const lastActive = profile.lastActiveAt
-      ? profile.lastActiveAt.slice(0, 10)
-      : profile.createdAt.slice(0, 10)
-    return daysBetween(lastActive, today) > 1 ? 'Welcome back. Ready to log?' : 'Good to see you.'
-  })()
+  const greeting = deriveGreeting(profile)
 
   return (
     <div className="flex min-h-screen items-center justify-center p-6 pb-24">
