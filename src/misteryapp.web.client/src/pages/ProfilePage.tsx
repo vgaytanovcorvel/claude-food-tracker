@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { type DietStyle, type UserProfile, getUserProfile, updateUserProfile, deleteUserProfile } from '../api/userProfileApi'
+import type { DietStyle } from '../domain/models'
 import { useIdentity } from '../hooks/useIdentity'
+import { useProfile } from '../features/user-profile/state/use-profile'
+import { useUpdateProfile } from '../features/user-profile/state/use-update-profile'
+import { useDeleteProfile } from '../features/user-profile/state/use-delete-profile'
 import BottomNav from '../components/BottomNav'
 
 const DIET_OPTIONS: { value: DietStyle; label: string }[] = [
@@ -13,44 +16,47 @@ const DIET_OPTIONS: { value: DietStyle; label: string }[] = [
 export default function ProfilePage() {
   const navigate = useNavigate()
   const { userId, clearIdentity } = useIdentity()
-  const [profile, setProfile] = useState<UserProfile | null>(null)
+  const { data: profile, isLoading, isError } = useProfile(userId)
+  const updateProfile = useUpdateProfile(userId)
+  const deleteProfile = useDeleteProfile()
   const [selectedDiet, setSelectedDiet] = useState<DietStyle>('Keto')
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!userId) { navigate('/onboarding'); return }
-    getUserProfile(Number(userId)).then(p => {
-      if (!p) { navigate('/onboarding'); return }
-      setProfile(p)
-      setSelectedDiet(p.dietStyle)
-    }).catch(() => setError('Failed to load profile.')).finally(() => setLoading(false))
   }, [userId, navigate])
+
+  useEffect(() => {
+    if (!isLoading && !profile) {
+      navigate('/onboarding')
+      return
+    }
+    if (profile) setSelectedDiet(profile.dietStyle)
+  }, [profile, isLoading, navigate])
+
+  useEffect(() => {
+    if (isError) setError('Failed to load profile.')
+  }, [isError])
 
   async function handleSaveDiet() {
     if (!profile) return
-    setSaving(true)
     setError(null)
     try {
-      const updated = await updateUserProfile(profile.id, selectedDiet)
-      setProfile(updated)
+      await updateProfile.mutateAsync(selectedDiet)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save.')
-    } finally {
-      setSaving(false)
     }
   }
 
   async function handleDeleteAccount() {
     if (!profile) return
     if (!window.confirm('Delete your account and all data? This cannot be undone.')) return
-    await deleteUserProfile(profile.id)
+    await deleteProfile.mutateAsync(profile.id)
     clearIdentity()
     navigate('/onboarding')
   }
 
-  if (loading) return (
+  if (isLoading) return (
     <div className="flex min-h-screen items-center justify-center">
       <p className="text-glass-muted">Loading...</p>
     </div>
@@ -95,10 +101,10 @@ export default function ProfilePage() {
         <div className="space-y-3">
           <button
             onClick={handleSaveDiet}
-            disabled={saving || selectedDiet === profile?.dietStyle}
+            disabled={updateProfile.isPending || selectedDiet === profile?.dietStyle}
             className="btn-primary w-full py-3"
           >
-            {saving ? 'Saving...' : 'Save changes'}
+            {updateProfile.isPending ? 'Saving...' : 'Save changes'}
           </button>
 
           <button

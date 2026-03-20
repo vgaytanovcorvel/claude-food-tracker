@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { type DietStyle, createUserProfile } from '../api/userProfileApi'
+import type { DietStyle } from '../domain/models'
 import { useIdentity } from '../hooks/useIdentity'
+import { useServices } from '../core/providers'
 
 const DIET_OPTIONS: { value: DietStyle; label: string; description: string }[] = [
   { value: 'Keto', label: 'Keto', description: 'Low-carb, high-fat' },
@@ -12,6 +13,7 @@ const DIET_OPTIONS: { value: DietStyle; label: string; description: string }[] =
 export default function OnboardingPage() {
   const navigate = useNavigate()
   const { setUserId } = useIdentity()
+  const { userProfileService } = useServices()
   const [name, setName] = useState('')
   const [dietStyle, setDietStyle] = useState<DietStyle>('Keto')
   const [error, setError] = useState<string | null>(null)
@@ -23,7 +25,7 @@ export default function OnboardingPage() {
     setLoading(true)
     setError(null)
     try {
-      const profile = await createUserProfile(name.trim(), dietStyle)
+      const profile = await userProfileService.createProfile(name.trim(), dietStyle)
       setUserId(String(profile.id))
       navigate('/')
     } catch (err) {

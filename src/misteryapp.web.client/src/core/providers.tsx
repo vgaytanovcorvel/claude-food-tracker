@@ -3,23 +3,27 @@ import { HttpUserProfileRepository } from '../repositories/http-user-profile-rep
 import { HttpFoodLogRepository } from '../repositories/http-food-log-repository'
 import { HttpReportRepository } from '../repositories/http-report-repository'
 import { HttpBookmarkRepository } from '../repositories/http-bookmark-repository'
-import type { IUserProfileRepository } from '../domain/interfaces/i-user-profile-repository'
-import type { IFoodLogRepository } from '../domain/interfaces/i-food-log-repository'
-import type { IReportRepository } from '../domain/interfaces/i-report-repository'
-import type { IBookmarkRepository } from '../domain/interfaces/i-bookmark-repository'
+import { UserProfileService } from '../services/user-profile-service'
+import { FoodLogService } from '../services/food-log-service'
+import { ReportService } from '../services/report-service'
+import { BookmarkService } from '../services/bookmark-service'
+import type { IUserProfileService } from '../domain/interfaces/i-user-profile-service'
+import type { IFoodLogService } from '../domain/interfaces/i-food-log-service'
+import type { IReportService } from '../domain/interfaces/i-report-service'
+import type { IBookmarkService } from '../domain/interfaces/i-bookmark-service'
 
 export interface Services {
-  userProfileRepository: IUserProfileRepository
-  foodLogRepository: IFoodLogRepository
-  reportRepository: IReportRepository
-  bookmarkRepository: IBookmarkRepository
+  userProfileService: IUserProfileService
+  foodLogService: IFoodLogService
+  reportService: IReportService
+  bookmarkService: IBookmarkService
 }
 
 const defaultServices: Services = {
-  userProfileRepository: new HttpUserProfileRepository(),
-  foodLogRepository: new HttpFoodLogRepository(),
-  reportRepository: new HttpReportRepository(),
-  bookmarkRepository: new HttpBookmarkRepository(),
+  userProfileService: new UserProfileService(new HttpUserProfileRepository()),
+  foodLogService: new FoodLogService(new HttpFoodLogRepository()),
+  reportService: new ReportService(new HttpReportRepository()),
+  bookmarkService: new BookmarkService(new HttpBookmarkRepository()),
 }
 
 const ServicesContext = createContext<Services | null>(null)

@@ -1,22 +1,11 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useIdentity } from '../hooks/useIdentity'
-import {
-  createFoodEntry,
-  identifyFood,
-  analyseEntry,
-  analysePreview,
-  patchAnalysis,
-  getAlternativeImage,
-  getImageForFoodName,
-  suggestAlternative,
-  suggestAlternativeByName,
-  type FoodEntrySource,
-  type FoodAnalysisResult,
-  type AnalysisPreviewResult,
-  type AlternativeImageResult,
-} from '../api/foodLogApi'
-import { createBookmark } from '../api/bookmarksApi'
+import { useServices } from '../core/providers'
+import { useLogFood } from '../features/food-log/state/use-log-food'
+import { useAnalysePreview } from '../features/food-log/state/use-analyse-preview'
+import { useCreateBookmark } from '../features/bookmarks/state/use-create-bookmark'
+import type { FoodEntrySource, FoodAnalysisResult, AlternativeImageResult } from '../domain/models'
 
 function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -30,13 +19,13 @@ function fileToBase64(file: File): Promise<string> {
 export default function FoodLoggingPage() {
   const { userId } = useIdentity()
   const navigate = useNavigate()
+  const { foodLogService } = useServices()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const photoFileRef = useRef<File | null>(null)
   const identifyAbortRef = useRef<AbortController | null>(null)
   const analyseAbortRef = useRef<AbortController | null>(null)
   const imageAbortRef = useRef<AbortController | null>(null)
   const suggestAbortRef = useRef<AbortController | null>(null)
-  const previewAbortRef = useRef<AbortController | null>(null)
   const preSaveImageAbortRef = useRef<AbortController | null>(null)
   const preSaveSuggestAbortRef = useRef<AbortController | null>(null)
   // Signals the next foodName change should fire preview with 0 delay (high-confidence Vision)
@@ -49,7 +38,6 @@ export default function FoodLoggingPage() {
     analyseAbortRef.current?.abort()
     imageAbortRef.current?.abort()
     suggestAbortRef.current?.abort()
-    previewAbortRef.current?.abort()
     preSaveImageAbortRef.current?.abort()
     preSaveSuggestAbortRef.current?.abort()
   }, [])
@@ -63,17 +51,19 @@ export default function FoodLoggingPage() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Calorie pill state (S10.6)
+  // Calorie pill state
   const [calories, setCalories] = useState(0)
   const [aiCalories, setAiCalories] = useState(0)
   const [calorieUserEdited, setCalorieUserEdited] = useState(false)
   const [calorieExpanded, setCalorieExpanded] = useState(false)
   const [calorieEditValue, setCalorieEditValue] = useState('')
 
-  // Pre-save analysis preview (S10.4 / S10.5)
-  const [previewResult, setPreviewResult] = useState<AnalysisPreviewResult | null>(null)
-  const [previewedFoodName, setPreviewedFoodName] = useState('')
-  const [previewLoading, setPreviewLoading] = useState(false)
+  // Pre-save analysis preview
+  const { previewResult, previewedFoodName, previewLoading, clearPreview } = useAnalysePreview({
+    foodName,
+    userId,
+    immediateRef: immediatePreviewRef,
+  })
 
   // Image zoom lightbox
   const [zoomedImageUrl, setZoomedImageUrl] = useState<string | null>(null)
@@ -104,12 +94,12 @@ export default function FoodLoggingPage() {
   const [suggestClickCount, setSuggestClickCount] = useState(0)
   const [suggestingAlternative, setSuggestingAlternative] = useState(false)
 
+  const logFood = useLogFood(userId)
+  const createBookmark = useCreateBookmark(userId)
 
-  // Debounced pre-analysis effect — fires on every foodName change (S10.4 / S10.5)
+  // Reset pre-save state when foodName changes (handled inside useAnalysePreview for the preview itself)
+  // but we need to reset image / suggest state too
   useEffect(() => {
-    previewAbortRef.current?.abort()
-    setPreviewResult(null)
-    setPreviewedFoodName('')
     setPreSaveImage(null)
     preSaveImageAbortRef.current?.abort()
     setPreSaveCurrentAlternativeName(null)
@@ -118,54 +108,35 @@ export default function FoodLoggingPage() {
     setPreSaveSuggestingAlternative(false)
     setPreSaveBookmarkSaved(false)
     preSaveSuggestAbortRef.current?.abort()
-
-    if (!userId || foodName.trim().length < 4) return
-
-    const delay = immediatePreviewRef.current ? 0 : 1200
-    immediatePreviewRef.current = false
-
-    const ac = new AbortController()
-    const timer = setTimeout(async () => {
-      previewAbortRef.current = ac
-      setPreviewLoading(true)
-      try {
-        const result = await analysePreview(foodName.trim(), parseInt(userId, 10), ac.signal)
-        if (ac.signal.aborted || !result) return
-        setPreviewResult(result)
-        setPreviewedFoodName(foodName.trim())
-        if (!calorieUserEditedRef.current && result.estimatedCalories > 0 && aiCalories === 0) {
-          setAiCalories(result.estimatedCalories)
-          setCalories(result.estimatedCalories)
-        }
-        if (!result.compatible && result.alternativeFoodName) {
-          setPreSaveCurrentAlternativeName(result.alternativeFoodName)
-          setPreSaveShownAlternatives([result.alternativeFoodName])
-          setPreSaveSuggestClickCount(0)
-          setPreSaveBookmarkSaved(false)
-          const imgAc = new AbortController()
-          preSaveImageAbortRef.current = imgAc
-          setPreSaveImageLoading(true)
-          getImageForFoodName(result.alternativeFoodName, parseInt(userId, 10), imgAc.signal)
-            .then(img => {
-              if (!imgAc.signal.aborted) {
-                setPreSaveImage(img)
-                setPreSaveImageLoading(false)
-              }
-            })
-            .catch(() => {
-              if (!imgAc.signal.aborted) setPreSaveImageLoading(false)
-            })
-        }
-      } finally {
-        if (!ac.signal.aborted) setPreviewLoading(false)
-      }
-    }, delay)
-
-    return () => {
-      clearTimeout(timer)
-      ac.abort()
-    }
   }, [foodName, userId])
+
+  // When previewResult arrives, populate calorie and alternative image
+  useEffect(() => {
+    if (!previewResult) return
+    if (!calorieUserEditedRef.current && previewResult.estimatedCalories > 0 && aiCalories === 0) {
+      setAiCalories(previewResult.estimatedCalories)
+      setCalories(previewResult.estimatedCalories)
+    }
+    if (!previewResult.compatible && previewResult.alternativeFoodName && userId) {
+      setPreSaveCurrentAlternativeName(previewResult.alternativeFoodName)
+      setPreSaveShownAlternatives([previewResult.alternativeFoodName])
+      setPreSaveSuggestClickCount(0)
+      setPreSaveBookmarkSaved(false)
+      const imgAc = new AbortController()
+      preSaveImageAbortRef.current = imgAc
+      setPreSaveImageLoading(true)
+      foodLogService.getImageForFoodName(previewResult.alternativeFoodName, parseInt(userId, 10), imgAc.signal)
+        .then(img => {
+          if (!imgAc.signal.aborted) {
+            setPreSaveImage(img)
+            setPreSaveImageLoading(false)
+          }
+        })
+        .catch(() => {
+          if (!imgAc.signal.aborted) setPreSaveImageLoading(false)
+        })
+    }
+  }, [previewResult, aiCalories])
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -182,7 +153,7 @@ export default function FoodLoggingPage() {
     setIdentifying(true)
     setError(null)
     try {
-      const result = await identifyFood(file, parseInt(userId, 10), controller.signal)
+      const result = await foodLogService.identifyFood(file, parseInt(userId, 10), controller.signal)
       if (!controller.signal.aborted && result && result.foodName) {
         if (result.confidenceLevel >= 0.85) {
           immediatePreviewRef.current = true
@@ -254,7 +225,13 @@ export default function FoodLoggingPage() {
     setError(null)
     try {
       const imageBase64 = photoFileRef.current ? await fileToBase64(photoFileRef.current) : null
-      const entry = await createFoodEntry(parseInt(userId, 10), foodName.trim(), calories, source, imageBase64)
+      const entry = await logFood.mutateAsync({
+        userId: parseInt(userId, 10),
+        foodName: foodName.trim(),
+        estimatedCalories: calories,
+        source,
+        imageBase64,
+      })
       setSavedEntryId(entry.id)
       if (previewUrl) URL.revokeObjectURL(previewUrl)
       setPreviewUrl(null)
@@ -263,7 +240,7 @@ export default function FoodLoggingPage() {
       setSaving(false)
 
       if (usePreview) {
-        previewAbortRef.current?.abort()
+        clearPreview()
         const analysisJson = JSON.stringify({
           compatible: previewResult.compatible,
           severity: previewResult.severity,
@@ -271,7 +248,7 @@ export default function FoodLoggingPage() {
           alternativeFoodName: previewResult.alternativeFoodName,
           estimatedCalories: previewResult.estimatedCalories,
         })
-        await patchAnalysis(entry.id, analysisJson)
+        await foodLogService.patchAnalysis(entry.id, analysisJson)
         const result: FoodAnalysisResult = {
           compatible: previewResult.compatible,
           severity: previewResult.severity,
@@ -290,13 +267,12 @@ export default function FoodLoggingPage() {
           if (preSaveImage) {
             setAlternativeImage(preSaveImage)
           } else if (preSaveImageLoading) {
-            // Transfer the in-flight image request to post-save state
             setLoadingImage(true)
             preSaveImageAbortRef.current?.abort()
             preSaveImageAbortRef.current = null
             const imgAc = new AbortController()
             imageAbortRef.current = imgAc
-            getImageForFoodName(initialAltName, parseInt(userId, 10), imgAc.signal)
+            foodLogService.getImageForFoodName(initialAltName, parseInt(userId, 10), imgAc.signal)
               .then(img => {
                 if (!imgAc.signal.aborted) {
                   setAlternativeImage(img)
@@ -311,7 +287,7 @@ export default function FoodLoggingPage() {
         analyseAbortRef.current?.abort()
         const analyseController = new AbortController()
         analyseAbortRef.current = analyseController
-        const result = await analyseEntry(entry.id, analyseController.signal)
+        const result = await foodLogService.analyseEntry(entry.id, analyseController.signal)
         if (analyseController.signal.aborted) return
         setAnalysing(false)
         if (result) {
@@ -324,7 +300,7 @@ export default function FoodLoggingPage() {
             const imgController = new AbortController()
             imageAbortRef.current = imgController
             setLoadingImage(true)
-            getAlternativeImage(entry.id, imgController.signal)
+            foodLogService.getAlternativeImage(entry.id, imgController.signal)
               .then(img => {
                 if (!imgController.signal.aborted) {
                   setAlternativeImage(img)
@@ -353,7 +329,7 @@ export default function FoodLoggingPage() {
     setSuggestingAlternative(true)
     setBookmarkSaved(false)
     try {
-      const suggestion = await suggestAlternative(savedEntryId, shownAlternatives, controller.signal)
+      const suggestion = await foodLogService.suggestAlternative(savedEntryId, shownAlternatives, controller.signal)
       if (controller.signal.aborted || !suggestion?.foodName) return
       const newName = suggestion.foodName
       setCurrentAlternativeName(newName)
@@ -364,7 +340,7 @@ export default function FoodLoggingPage() {
       imageAbortRef.current?.abort()
       const imgController = new AbortController()
       imageAbortRef.current = imgController
-      getImageForFoodName(newName, parseInt(userId, 10), imgController.signal)
+      foodLogService.getImageForFoodName(newName, parseInt(userId, 10), imgController.signal)
         .then(img => {
           if (!imgController.signal.aborted) {
             setAlternativeImage(img)
@@ -389,7 +365,7 @@ export default function FoodLoggingPage() {
     setPreSaveSuggestingAlternative(true)
     setPreSaveBookmarkSaved(false)
     try {
-      const suggestion = await suggestAlternativeByName(
+      const suggestion = await foodLogService.suggestAlternativeByName(
         foodName.trim(),
         parseInt(userId, 10),
         preSaveShownAlternatives,
@@ -405,7 +381,7 @@ export default function FoodLoggingPage() {
       preSaveImageAbortRef.current?.abort()
       const imgAc = new AbortController()
       preSaveImageAbortRef.current = imgAc
-      getImageForFoodName(newName, parseInt(userId, 10), imgAc.signal)
+      foodLogService.getImageForFoodName(newName, parseInt(userId, 10), imgAc.signal)
         .then(img => {
           if (!imgAc.signal.aborted) {
             setPreSaveImage(img)
@@ -507,7 +483,12 @@ export default function FoodLoggingPage() {
                                   if (!userId) return
                                   setBookmarkSaving(true)
                                   try {
-                                    await createBookmark(parseInt(userId, 10), currentAlternativeName, alternativeImage?.imageBase64 ?? null, alternativeImage?.mimeType ?? null)
+                                    await createBookmark.mutateAsync({
+                                      userId: parseInt(userId, 10),
+                                      alternativeFoodName: currentAlternativeName,
+                                      imageBase64: alternativeImage?.imageBase64 ?? null,
+                                      mimeType: alternativeImage?.mimeType ?? null,
+                                    })
                                     setBookmarkSaved(true)
                                   } finally {
                                     setBookmarkSaving(false)
@@ -708,7 +689,12 @@ export default function FoodLoggingPage() {
                                       if (!userId) return
                                       setPreSaveBookmarkSaving(true)
                                       try {
-                                        await createBookmark(parseInt(userId, 10), preSaveCurrentAlternativeName ?? previewResult!.alternativeFoodName!, preSaveImage?.imageBase64 ?? null, preSaveImage?.mimeType ?? null)
+                                        await createBookmark.mutateAsync({
+                                          userId: parseInt(userId, 10),
+                                          alternativeFoodName: preSaveCurrentAlternativeName ?? previewResult!.alternativeFoodName!,
+                                          imageBase64: preSaveImage?.imageBase64 ?? null,
+                                          mimeType: preSaveImage?.mimeType ?? null,
+                                        })
                                         setPreSaveBookmarkSaved(true)
                                       } finally {
                                         setPreSaveBookmarkSaving(false)

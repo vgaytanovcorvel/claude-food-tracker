@@ -1,8 +1,7 @@
-import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useIdentity } from '../hooks/useIdentity'
-import { getUserProfile } from '../api/userProfileApi'
-import { getDailySummary } from '../api/foodLogApi'
+import { useProfile } from '../features/user-profile/state/use-profile'
+import { useDailySummary } from '../features/food-log/state/use-daily-summary'
 import BottomNav from '../components/BottomNav'
 
 const CALORIE_TARGET = 2000
@@ -12,6 +11,14 @@ function daysBetween(isoDateStr: string, today: Date): number {
   const past = new Date(y, mo - 1, d)
   const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate())
   return Math.floor((todayMidnight.getTime() - past.getTime()) / (1000 * 60 * 60 * 24))
+}
+
+function todayDateString(): string {
+  const now = new Date()
+  const y = now.getFullYear()
+  const m = String(now.getMonth() + 1).padStart(2, '0')
+  const d = String(now.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
 }
 
 function CalorieRing({ calories }: { calories: number }) {
@@ -66,26 +73,20 @@ function CalorieRing({ calories }: { calories: number }) {
 
 export default function HomePage() {
   const { userId } = useIdentity()
-  const [greeting, setGreeting] = useState<string | null>(null)
-  const [calories, setCalories] = useState(0)
+  const todayStr = todayDateString()
+  const { data: profile } = useProfile(userId)
+  const { data: summary } = useDailySummary(userId, todayStr)
 
-  useEffect(() => {
-    if (!userId) return
-    const numericId = Number(userId)
+  const calories = summary?.totalCalories ?? 0
 
-    getUserProfile(numericId).then(profile => {
-      if (!profile) return
-      const today = new Date()
-      const lastActive = profile.lastActiveAt
-        ? profile.lastActiveAt.slice(0, 10)
-        : profile.createdAt.slice(0, 10)
-      setGreeting(daysBetween(lastActive, today) > 1 ? 'Welcome back. Ready to log?' : 'Good to see you.')
-    }).catch(() => setGreeting('Welcome back.'))
-
+  const greeting = (() => {
+    if (!profile) return 'Welcome back.'
     const today = new Date()
-    const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
-    getDailySummary(numericId, dateStr).then(s => { if (s) setCalories(s.totalCalories) }).catch(() => {})
-  }, [userId])
+    const lastActive = profile.lastActiveAt
+      ? profile.lastActiveAt.slice(0, 10)
+      : profile.createdAt.slice(0, 10)
+    return daysBetween(lastActive, today) > 1 ? 'Welcome back. Ready to log?' : 'Good to see you.'
+  })()
 
   return (
     <div className="flex min-h-screen items-center justify-center p-6 pb-24">
@@ -95,7 +96,7 @@ export default function HomePage() {
         <div className="space-y-2">
           <h1 className="text-display-md text-white font-extrabold tracking-tight">Food Habit Tracker</h1>
           <p className="text-white/55 text-sm">
-            {userId ? (greeting ?? 'Welcome back.') : 'Track your food habits.'}
+            {userId ? greeting : 'Track your food habits.'}
           </p>
         </div>
 

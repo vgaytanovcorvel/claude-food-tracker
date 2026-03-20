@@ -1,54 +1,25 @@
-import { useState, useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useIdentity } from '../hooks/useIdentity'
-import {
-  getUserBookmarks,
-  deleteBookmark,
-  type AlternativeBookmark,
-} from '../api/bookmarksApi'
+import { useBookmarks } from '../features/bookmarks/state/use-bookmarks'
+import { useDeleteBookmark } from '../features/bookmarks/state/use-delete-bookmark'
 import BottomNav from '../components/BottomNav'
 
 export default function BookmarksPage() {
   const { userId } = useIdentity()
   const navigate = useNavigate()
-  const [bookmarks, setBookmarks] = useState<AlternativeBookmark[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const abortRef = useRef<AbortController | null>(null)
+
+  const { data: bookmarks = [], isLoading, isError } = useBookmarks(userId)
+  const deleteBookmark = useDeleteBookmark(userId)
 
   useEffect(() => {
     if (!userId) {
       navigate('/onboarding', { replace: true })
-      return
     }
-    if (abortRef.current) abortRef.current.abort()
-    const controller = new AbortController()
-    abortRef.current = controller
-    setLoading(true)
-    setError(null)
-
-    getUserBookmarks(Number(userId), controller.signal)
-      .then(items => {
-        if (controller.signal.aborted) return
-        setBookmarks(items)
-        setLoading(false)
-      })
-      .catch(() => {
-        if (controller.signal.aborted) return
-        setError('Failed to load bookmarks. Please try again.')
-        setLoading(false)
-      })
-
-    return () => controller.abort()
   }, [userId, navigate])
 
   async function handleDelete(id: number) {
-    try {
-      await deleteBookmark(id)
-      setBookmarks(bm => bm.filter(b => b.id !== id))
-    } catch {
-      setError('Failed to remove bookmark. Please try again.')
-    }
+    await deleteBookmark.mutateAsync(id)
   }
 
   return (
@@ -59,9 +30,10 @@ export default function BookmarksPage() {
           <p className="text-glass-muted text-sm mt-1">Meals to try instead when your diet conflicts.</p>
         </div>
 
-        {error && <p className="text-red-400 text-sm">{error}</p>}
+        {isError && <p className="text-red-400 text-sm">Failed to load bookmarks. Please try again.</p>}
+        {deleteBookmark.isError && <p className="text-red-400 text-sm">Failed to remove bookmark. Please try again.</p>}
 
-        {loading && (
+        {isLoading && (
           <div className="space-y-3 animate-pulse">
             {[1, 2, 3].map(i => (
               <div key={i} className="h-20 rounded-2xl bg-white/10" />
@@ -69,7 +41,7 @@ export default function BookmarksPage() {
           </div>
         )}
 
-        {!loading && !error && bookmarks.length === 0 && (
+        {!isLoading && !isError && bookmarks.length === 0 && (
           <div className="flex flex-col items-center gap-4 py-10 text-center">
             <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ background: 'rgba(14,165,233,0.10)', border: '1px solid rgba(14,165,233,0.2)' }}>
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(56,189,248,0.6)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -85,7 +57,7 @@ export default function BookmarksPage() {
           </div>
         )}
 
-        {!loading && !error && bookmarks.length > 0 && (
+        {!isLoading && !isError && bookmarks.length > 0 && (
           <ul className="space-y-3">
             {bookmarks.map(bookmark => (
               <li

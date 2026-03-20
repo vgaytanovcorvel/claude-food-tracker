@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Link } from 'react-router-dom'
 import { useIdentity } from '../hooks/useIdentity'
-import { getWeeklyReport, type WeeklyReport, type DailyCalorieSummary } from '../api/reportApi'
+import { useWeeklyReport } from '../features/reports/state/use-weekly-report'
+import type { DailyCalorieSummary } from '../domain/models'
 import ComplianceArc from '../components/ComplianceArc'
 import BottomNav from '../components/BottomNav'
 
@@ -84,36 +85,14 @@ export default function WeeklyReportPage() {
   const { userId } = useIdentity()
   const navigate = useNavigate()
   const [weekStart, setWeekStart] = useState<string>(() => getMondayOfWeek(todayString()))
-  const [report, setReport] = useState<WeeklyReport | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const abortRef = useRef<AbortController | null>(null)
+
+  const { data: report, isLoading, isError } = useWeeklyReport(userId, weekStart)
 
   useEffect(() => {
     if (!userId) {
       navigate('/onboarding', { replace: true })
-      return
     }
-    if (abortRef.current) abortRef.current.abort()
-    const controller = new AbortController()
-    abortRef.current = controller
-    setLoading(true)
-    setError(null)
-
-    getWeeklyReport(Number(userId), weekStart, controller.signal)
-      .then(r => {
-        if (controller.signal.aborted) return
-        setReport(r)
-        setLoading(false)
-      })
-      .catch(() => {
-        if (controller.signal.aborted) return
-        setError('Failed to load report. Please try again.')
-        setLoading(false)
-      })
-
-    return () => controller.abort()
-  }, [userId, weekStart, navigate])
+  }, [userId, navigate])
 
   return (
     <div className="flex min-h-screen items-center justify-center p-6 pb-28">
@@ -152,16 +131,16 @@ export default function WeeklyReportPage() {
           </button>
         </div>
 
-        {error && <p className="text-red-400 text-sm">{error}</p>}
+        {isError && <p className="text-red-400 text-sm">Failed to load report. Please try again.</p>}
 
-        {loading && (
+        {isLoading && (
           <div className="space-y-3 animate-pulse">
             <div className="h-28 rounded-2xl bg-white/10" />
             <div className="h-16 rounded-2xl bg-white/10" />
           </div>
         )}
 
-        {!loading && report && (
+        {!isLoading && report && (
           <>
             {/* Calorie bar chart */}
             <div className="rounded-2xl p-5 space-y-3" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>

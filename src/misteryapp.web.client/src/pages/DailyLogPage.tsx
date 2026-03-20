@@ -1,14 +1,11 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Link } from 'react-router-dom'
 import { useIdentity } from '../hooks/useIdentity'
-import {
-  getDailyEntries,
-  getDailySummary,
-  deleteFoodEntry,
-  type FoodEntry,
-  type DailyLogSummary,
-} from '../api/foodLogApi'
+import { useDailyEntries } from '../features/food-log/state/use-daily-entries'
+import { useDailySummary } from '../features/food-log/state/use-daily-summary'
+import { useDeleteFoodEntry } from '../features/food-log/state/use-delete-food-entry'
+
 import BottomNav from '../components/BottomNav'
 
 function formatDate(d: string): string {
@@ -72,55 +69,26 @@ function SeverityBadge({ severity }: { severity: string }) {
   )
 }
 
+
 export default function DailyLogPage() {
   const { userId } = useIdentity()
   const navigate = useNavigate()
   const [date, setDate] = useState<string>(todayString())
-  const [entries, setEntries] = useState<FoodEntry[]>([])
-  const [summary, setSummary] = useState<DailyLogSummary | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const abortRef = useRef<AbortController | null>(null)
+
+  const { data: entries = [], isLoading: entriesLoading, isError: entriesError } = useDailyEntries(userId, date)
+  const { data: summary, isLoading: summaryLoading } = useDailySummary(userId, date)
+  const deleteFoodEntry = useDeleteFoodEntry(userId)
+
+  const loading = entriesLoading || summaryLoading
 
   useEffect(() => {
     if (!userId) {
       navigate('/onboarding', { replace: true })
-      return
     }
-    const numericUserId = Number(userId)
-    if (abortRef.current) abortRef.current.abort()
-    const controller = new AbortController()
-    abortRef.current = controller
-
-    setLoading(true)
-    setError(null)
-
-    Promise.all([
-      getDailyEntries(numericUserId, date, controller.signal),
-      getDailySummary(numericUserId, date, controller.signal),
-    ])
-      .then(([fetchedEntries, fetchedSummary]) => {
-        if (controller.signal.aborted) return
-        setEntries(fetchedEntries)
-        setSummary(fetchedSummary)
-        setLoading(false)
-      })
-      .catch(() => {
-        if (controller.signal.aborted) return
-        setError('Failed to load entries. Please try again.')
-        setLoading(false)
-      })
-
-    return () => controller.abort()
-  }, [userId, date, navigate])
+  }, [userId, navigate])
 
   async function handleDelete(id: number) {
-    await deleteFoodEntry(id)
-    const numericUserId = Number(userId)
-    const updatedEntries = entries.filter(e => e.id !== id)
-    setEntries(updatedEntries)
-    const freshSummary = await getDailySummary(numericUserId, date)
-    setSummary(freshSummary)
+    await deleteFoodEntry.mutateAsync(id)
   }
 
   return (
@@ -198,8 +166,8 @@ export default function DailyLogPage() {
         )}
 
         {/* Error state */}
-        {error && (
-          <p className="text-red-400 text-sm">{error}</p>
+        {entriesError && (
+          <p className="text-red-400 text-sm">Failed to load entries. Please try again.</p>
         )}
 
         {/* Loading skeleton */}
@@ -212,7 +180,7 @@ export default function DailyLogPage() {
         )}
 
         {/* Empty state */}
-        {!loading && !error && entries.length === 0 && (
+        {!loading && !entriesError && entries.length === 0 && (
           <div className="flex flex-col items-center gap-4 py-8 text-center">
             <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ background: 'rgba(14,165,233,0.12)', border: '1px solid rgba(14,165,233,0.25)' }}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(56,189,248,0.7)" strokeWidth="1.5" strokeLinecap="round">
@@ -234,7 +202,7 @@ export default function DailyLogPage() {
         )}
 
         {/* Entry list */}
-        {!loading && !error && entries.length > 0 && (
+        {!loading && !entriesError && entries.length > 0 && (
           <ul className="space-y-3">
             {entries.map(entry => {
               const analysis = parseAnalysis(entry.analysisResult)
@@ -280,7 +248,7 @@ export default function DailyLogPage() {
         )}
 
         {/* Log food CTA (when entries exist) */}
-        {!loading && !error && entries.length > 0 && (
+        {!loading && !entriesError && entries.length > 0 && (
           <Link
             to="/food-log"
             className="inline-block text-sm font-medium transition-colors duration-200"
