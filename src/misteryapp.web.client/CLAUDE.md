@@ -12,6 +12,8 @@ React 18 + Vite + Tailwind CSS client — the food habit tracker SPA. Communicat
 @../../rules/typescript/react.md
 @../../rules/typescript/patterns.md
 @../../rules/typescript/security.md
+@../../rules/common/testing.md
+@../../rules/typescript/testing.md
 
 ## Module Purpose
 
